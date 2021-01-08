@@ -1,0 +1,15 @@
+{
+  "name": "mbstack",
+  "version": "1.0.1",
+  "description": "Modbus stack for Node.JS.",
+  "main": "library/api.js",
+  "author": "XiaoJSoft Studio.",
+  "license": "BSD-3-Clause",
+  "dependencies": {
+    "xrtlibrary-async": "^1.0.17",
+    "xrtlibrary-bufferutilities": "^1.0.4",
+    "xrtlibrary-bughandler": "^1.0.3",
+    "xrtlibrary-tcputilities": "^1.0.12",
+    "xrtlibrary-traverse": "^1.0.11"
+  }
+}
