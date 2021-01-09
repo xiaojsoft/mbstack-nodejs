@@ -291,6 +291,19 @@ function MBTimeoutError(message = "") {
     MBError.call(this, message);
 }
 
+/**
+ *  MB device error.
+ * 
+ *  @constructor
+ *  @extends {MBError}
+ *  @param {String} [message]
+ *      - The message.
+ */
+function MBDeviceError(message = "") {
+    //  Let parent class initialize.
+    MBError.call(this, message);
+}
+
 //
 //  Inheritances.
 //
@@ -315,6 +328,7 @@ Util.inherits(MBTransportNotExistError, MBError);
 Util.inherits(MBInitiateError, MBError);
 Util.inherits(MBPeerError, MBError);
 Util.inherits(MBTimeoutError, MBError);
+Util.inherits(MBDeviceError, MBError);
 
 //  Export public APIs.
 module.exports = {
@@ -338,5 +352,6 @@ module.exports = {
     "MBTransportNotExistError": MBTransportNotExistError,
     "MBInitiateError": MBInitiateError,
     "MBPeerError": MBPeerError,
-    "MBTimeoutError": MBTimeoutError
+    "MBTimeoutError": MBTimeoutError,
+    "MBDeviceError": MBDeviceError
 };
