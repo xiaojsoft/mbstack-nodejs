@@ -676,8 +676,9 @@ function MBTCPTransceiver(
                         break;
                     }
                     throw error;
+                } finally {
+                    cts.fullfill();
                 }
-                cts.fullfill();
                 let wh = rsv.getPromiseObject();
                 if (wh == wh1) {
                     //  Do nothing.
