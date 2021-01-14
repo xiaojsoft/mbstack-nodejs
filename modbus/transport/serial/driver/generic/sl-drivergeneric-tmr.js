@@ -51,6 +51,7 @@ const EMPTY_CB = function() {};
 const BITMASK_INTVCHG  = 0x01;
 const BITMASK_POLLSTOP = 0x02;
 const BITMASK_POLLEXIT = 0x04;
+const BITMASK_RESTART  = 0x08;
 
 //  Timer states.
 const STATE_STOP       = 0;
@@ -198,6 +199,14 @@ function MBGenericSerialPortTimer() {
         return interval;
     };
 
+    /**
+     *  Restart the timer.
+     */
+    this.restart = function() {
+        flags.post(BITMASK_RESTART, EventFlags.POST_FLAG_SET);
+        self.setInterval(self.getInterval());
+    };
+
     //
     //  Coroutine(s).
     //
@@ -207,6 +216,9 @@ function MBGenericSerialPortTimer() {
         let state = STATE_STOP;
         while(true) {
             if (state == STATE_STOP) {
+                if ((flags.value & BITMASK_RESTART) != 0) {
+                    flags.post(BITMASK_RESTART, EventFlags.POST_FLAG_CLR);
+                }
                 if (interval >= LONGSHORT_THRESHOLD) {
                     _UpdateNextTickTimestamp();
                     state = STATE_LONGWAIT;
@@ -260,8 +272,22 @@ function MBGenericSerialPortTimer() {
 
                     //  Handle the new interval.
                     if (interval >= LONGSHORT_THRESHOLD) {
+                        if ((flags.value & BITMASK_RESTART) != 0) {
+                            _UpdateNextTickTimestamp();
+                            flags.post(
+                                BITMASK_RESTART, 
+                                EventFlags.POST_FLAG_CLR
+                            );
+                        }
                         state = STATE_LONGWAIT;
                     } else if (interval > 0) {
+                        if ((flags.value & BITMASK_RESTART) != 0) {
+                            _UpdateNextTickTimestamp();
+                            flags.post(
+                                BITMASK_RESTART, 
+                                EventFlags.POST_FLAG_CLR
+                            );
+                        }
                         state = STATE_SHORTWAIT;
                     } else {
                         state = STATE_STOP;
@@ -301,8 +327,22 @@ function MBGenericSerialPortTimer() {
 
                 //  Handle the new interval.
                 if (interval >= LONGSHORT_THRESHOLD) {
+                    if ((flags.value & BITMASK_RESTART) != 0) {
+                        _UpdateNextTickTimestamp();
+                        flags.post(
+                            BITMASK_RESTART, 
+                            EventFlags.POST_FLAG_CLR
+                        );
+                    }
                     state = STATE_LONGWAIT;
                 } else if (interval > 0) {
+                    if ((flags.value & BITMASK_RESTART) != 0) {
+                        _UpdateNextTickTimestamp();
+                        flags.post(
+                            BITMASK_RESTART, 
+                            EventFlags.POST_FLAG_CLR
+                        );
+                    }
                     state = STATE_SHORTWAIT;
                 } else {
                     state = STATE_STOP;

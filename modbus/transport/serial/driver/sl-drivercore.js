@@ -58,6 +58,16 @@ function IMBSerialPort() {
     //
 
     /**
+     *  Restart the timer.
+     * 
+     *  @throws {MBInvalidOperationError}
+     *    - The serial port was already disposed.
+     */
+    this.timerRestart = function() {
+        throw new Error("Not implemented.");
+    };
+
+    /**
      *  Set the timer tick callback.
      * 
      *  @throws {MBInvalidOperationError}

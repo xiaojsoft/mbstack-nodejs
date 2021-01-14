@@ -113,6 +113,24 @@ function MBGenericSerialPort(serialport) {
     //
 
     /**
+     *  Restart the timer.
+     * 
+     *  @throws {MBInvalidOperationError}
+     *    - The serial port was already disposed.
+     */
+    this.timerRestart = function() {
+        //  Throw if disposed.
+        if (syncCmdDispose.isFullfilled()) {
+            throw new MBInvalidOperationError(
+                "The serial port was already disposed."
+            );
+        }
+
+        //  Restart the timer.
+        tmr.restart();
+    };
+
+    /**
      *  Set the timer tick callback.
      * 
      *  @throws {MBInvalidOperationError}
