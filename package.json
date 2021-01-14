@@ -6,10 +6,14 @@
   "author": "XiaoJSoft Studio.",
   "license": "BSD-3-Clause",
   "dependencies": {
+    "serialport": "^9.0.4",
     "xrtlibrary-async": "^1.0.17",
     "xrtlibrary-bufferutilities": "^1.0.4",
     "xrtlibrary-bughandler": "^1.0.3",
     "xrtlibrary-tcputilities": "^1.0.12",
     "xrtlibrary-traverse": "^1.0.11"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.20"
   }
 }

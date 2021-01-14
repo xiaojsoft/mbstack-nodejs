@@ -12,8 +12,5 @@
 #  Backup files.
 *.bak
 
-#  Modbus serial line transport is not finished yet. Do NOT commit.
-/modbus/transport/serial/
-
 #  Dependency directories
 node_modules/
