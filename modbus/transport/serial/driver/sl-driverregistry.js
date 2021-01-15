@@ -81,7 +81,7 @@ function MBSerialPortDriverRegistry() {
      *    - The driver (NULL if not exists).
      */
     this.getDriver = function(name) {
-        if (drivers.has(name)) {
+        if (!drivers.has(name)) {
             return null;
         }
         return drivers.get(name);
