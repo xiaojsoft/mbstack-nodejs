@@ -482,6 +482,16 @@ function MBGenericSerialPortDriver() {
     //
 
     /**
+     *  Get the driver name.
+     * 
+     *  @returns {String}
+     *    - The driver name.
+     */
+    this.getDriverName = function() {
+        return "generic";
+    };
+
+    /**
      *  Open a serial port.
      * 
      *  @throws {MBDeviceError}

@@ -352,6 +352,16 @@ function IMBSerialPortDriver() {
     //
 
     /**
+     *  Get the driver name.
+     * 
+     *  @returns {String}
+     *    - The driver name.
+     */
+    this.getDriverName = function() {
+        throw new Error("Not implemented.");
+    };
+
+    /**
      *  Open a serial port.
      * 
      *  @throws {MBDeviceError}
