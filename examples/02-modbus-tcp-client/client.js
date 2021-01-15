@@ -23,6 +23,7 @@ const MBTCPMasterTransportFactory =
 const ConditionalSynchronizer = 
     XRTLibAsync.Synchronize.Conditional.ConditionalSynchronizer;
 
+//  Imported functions.
 const NewReadHoldingRegistersCommand = 
     MBStack.ProtocolLayer.Master.BuiltIns.NewReadHoldingRegistersCommand;
 const NewWriteMultipleRegistersCommand = 
