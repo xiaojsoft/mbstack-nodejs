@@ -74,6 +74,9 @@ const MBSL_PARITY_ODD =
 //  Constants.
 //
 
+//  Driver name.
+const DRIVER_NAME = "generic";
+
 //  RX buffer size.
 const RXBUFSIZE = 65536;
 
@@ -87,8 +90,10 @@ const RXBUFSIZE = 65536;
  *  @constructor
  *  @param {SerialPort} serialport
  *    - The serial port.
+ *  @param {MBSerialPortOption} options
+ *    - The serial port options.
  */
-function MBGenericSerialPort(serialport) {
+function MBGenericSerialPort(serialport, options) {
     //  Let parent class initialize.
     IMBSerialPort.call(this);
 
@@ -111,6 +116,16 @@ function MBGenericSerialPort(serialport) {
     //
     //  Public methods.
     //
+
+    /**
+     *  Get the serial port options.
+     * 
+     *  @returns {MBSerialPortOption}
+     *    - The serial port options.
+     */
+    this.getPortOptions = function() {
+        return options;
+    };
 
     /**
      *  Restart the timer.
@@ -488,7 +503,7 @@ function MBGenericSerialPortDriver() {
      *    - The driver name.
      */
     this.getDriverName = function() {
-        return "generic";
+        return DRIVER_NAME;
     };
 
     /**
@@ -590,9 +605,12 @@ function MBGenericSerialPortDriver() {
         }
         
         //  Create instance.
-        return new MBGenericSerialPort(port);
+        return new MBGenericSerialPort(port, options);
     };
 }
+
+//  Driver name.
+MBGenericSerialPortDriver.DRIVER_NAME = DRIVER_NAME;
 
 //  Global driver instance.
 MBGenericSerialPortDriver.INSTANCE = new MBGenericSerialPortDriver();

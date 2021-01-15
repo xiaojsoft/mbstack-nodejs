@@ -58,6 +58,16 @@ function IMBSerialPort() {
     //
 
     /**
+     *  Get the serial port options.
+     * 
+     *  @returns {MBSerialPortOption}
+     *    - The serial port options.
+     */
+    this.getPortOptions = function() {
+        throw new Error("Not implemented.");
+    };
+
+    /**
      *  Restart the timer.
      * 
      *  @throws {MBInvalidOperationError}
@@ -338,6 +348,16 @@ function MBSerialPortOption(
      */
     this.getParityType = function() {
         return parity;
+    };
+
+    /**
+     *  Fork a new copy of this option.
+     * 
+     *  @returns {MBSerialPortOption}
+     *    - The forked serial port option.
+     */
+    this.fork = function() {
+        return new MBSerialPortOption(baudrate, nDataBits, nStopBits, parity);
     };
 }
 
