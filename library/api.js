@@ -65,6 +65,20 @@ const MbTspTcpMasterTransport =
     require("./../modbus/transport/tcp/master/tcpmaster-transport");
 const MbTspTcpSlaveTransport = 
     require("./../modbus/transport/tcp/slave/tcpslave-transport");
+const MbTspSlAsciiMasterTransport = 
+    require("./../modbus/transport/serial/ascii/master/slasciimaster-transport");
+const MbTspSlAsciiSlaveTransport = 
+    require("./../modbus/transport/serial/ascii/slave/slasciislave-transport");
+const MbTspSlRtuMasterTransport = 
+    require("./../modbus/transport/serial/rtu/master/slrtumaster-transport");
+const MbTspSlRtuSlaveTransport = 
+    require("./../modbus/transport/serial/rtu/slave/slrtuslave-transport");
+const MbTspSlDriverCore = 
+    require("./../modbus/transport/serial/driver/sl-drivercore");
+const MbTspSlDriverRegistry = 
+    require("./../modbus/transport/serial/driver/sl-driverregistry");
+const MbTspSlDriverGeneric = 
+    require("./../modbus/transport/serial/driver/generic/sl-drivergeneric");
 const MbError = 
     require("./../error");
 
@@ -131,6 +145,34 @@ const MBTCPSlaveTransport =
     MbTspTcpSlaveTransport.MBTCPSlaveTransport;
 const MBTCPSlaveTransportFactory = 
     MbTspTcpSlaveTransport.MBTCPSlaveTransportFactory;
+const MBAsciiMasterTransport = 
+    MbTspSlAsciiMasterTransport.MBAsciiMasterTransport;
+const MBAsciiMasterTransportFactory = 
+    MbTspSlAsciiMasterTransport.MBAsciiMasterTransportFactory;
+const MBAsciiSlaveTransport = 
+    MbTspSlAsciiSlaveTransport.MBAsciiSlaveTransport;
+const MBAsciiSlaveTransportFactory = 
+    MbTspSlAsciiSlaveTransport.MBAsciiSlaveTransportFactory;
+const MBRtuMasterTransport = 
+    MbTspSlRtuMasterTransport.MBRtuMasterTransport;
+const MBRtuMasterTransportFactory = 
+    MbTspSlRtuMasterTransport.MBRtuMasterTransportFactory;
+const MBRtuSlaveTransport = 
+    MbTspSlRtuSlaveTransport.MBRtuSlaveTransport;
+const MBRtuSlaveTransportFactory = 
+    MbTspSlRtuSlaveTransport.MBRtuSlaveTransportFactory;
+const IMBSerialPort = 
+    MbTspSlDriverCore.IMBSerialPort;
+const IMBSerialPortDriver = 
+    MbTspSlDriverCore.IMBSerialPortDriver;
+const MBSerialPortOption = 
+    MbTspSlDriverCore.MBSerialPortOption;
+const MBSerialPortDriverRegistry = 
+    MbTspSlDriverRegistry.MBSerialPortDriverRegistry;
+const MBGenericSerialPort = 
+    MbTspSlDriverGeneric.MBGenericSerialPort;
+const MBGenericSerialPortDriver = 
+    MbTspSlDriverGeneric.MBGenericSerialPortDriver;
 const MBError = 
     MbError.MBError;
 const MBBugError = 
@@ -173,6 +215,8 @@ const MBPeerError =
     MbError.MBPeerError;
 const MBTimeoutError = 
     MbError.MBTimeoutError;
+const MBDeviceError = 
+    MbError.MBDeviceError;
 
 //  Imported functions.
 const NewReadCoilsCommand = 
@@ -211,6 +255,20 @@ const MBEX_GW_PATH_UNAVAILABLE =
     MbPrExceptions.MBEX_GW_PATH_UNAVAILABLE;
 const MBEX_GW_TARGET_FAILED = 
     MbPrExceptions.MBEX_GW_TARGET_FAILED;
+const MBSL_DATABIT_7 = 
+    MbTspSlDriverCore.MBSL_DATABIT_7;
+const MBSL_DATABIT_8 = 
+    MbTspSlDriverCore.MBSL_DATABIT_8;
+const MBSL_PARITY_NONE = 
+    MbTspSlDriverCore.MBSL_PARITY_NONE;
+const MBSL_PARITY_ODD = 
+    MbTspSlDriverCore.MBSL_PARITY_ODD;
+const MBSL_PARITY_EVEN = 
+    MbTspSlDriverCore.MBSL_PARITY_EVEN;
+const MBSL_STOPBIT_1 = 
+    MbTspSlDriverCore.MBSL_STOPBIT_1;
+const MBSL_STOPBIT_2 = 
+    MbTspSlDriverCore.MBSL_STOPBIT_2;
 
 //  Export public APIs.
 module.exports = {
@@ -336,6 +394,58 @@ module.exports = {
                 MBTCPSlaveTransportFactory,
             "MBTCPSlaveTransport": 
                 MBTCPSlaveTransport
+        },
+        "Serial": {
+            "RTU": {
+                "MBRtuMasterTransport": 
+                    MBRtuMasterTransport,
+                "MBRtuMasterTransportFactory": 
+                    MBRtuMasterTransportFactory,
+                "MBRtuSlaveTransport": 
+                    MBRtuSlaveTransport,
+                "MBRtuSlaveTransportFactory": 
+                    MBRtuSlaveTransportFactory
+            },
+            "ASCII": {
+                "MBAsciiMasterTransport": 
+                    MBAsciiMasterTransport,
+                "MBAsciiMasterTransportFactory": 
+                    MBAsciiMasterTransportFactory,
+                "MBAsciiSlaveTransport": 
+                    MBAsciiSlaveTransport,
+                "MBAsciiSlaveTransportFactory": 
+                    MBAsciiSlaveTransportFactory
+            },
+            "Driver": {
+                "Generic": {
+                    "MBGenericSerialPort": 
+                        MBGenericSerialPort,
+                    "MBGenericSerialPortDriver": 
+                        MBGenericSerialPortDriver
+                },
+                "MBSL_DATABIT_7": 
+                    MBSL_DATABIT_7,
+                "MBSL_DATABIT_8": 
+                    MBSL_DATABIT_8,
+                "MBSL_PARITY_NONE": 
+                    MBSL_PARITY_NONE,
+                "MBSL_PARITY_ODD": 
+                    MBSL_PARITY_ODD,
+                "MBSL_PARITY_EVEN": 
+                    MBSL_PARITY_EVEN,
+                "MBSL_STOPBIT_1": 
+                    MBSL_STOPBIT_1,
+                "MBSL_STOPBIT_2": 
+                    MBSL_STOPBIT_2,
+                "IMBSerialPort": 
+                    IMBSerialPort,
+                "IMBSerialPortDriver": 
+                    IMBSerialPortDriver,
+                "MBSerialPortOption": 
+                    MBSerialPortOption,
+                "MBSerialPortDriverRegistry": 
+                    MBSerialPortDriverRegistry
+            }
         }
     },
     "Errors": {
@@ -380,6 +490,8 @@ module.exports = {
         "MBPeerError": 
             MBPeerError,
         "MBTimeoutError": 
-            MBTimeoutError
+            MBTimeoutError,
+        "MBDeviceError": 
+            MBDeviceError
     }
 };
