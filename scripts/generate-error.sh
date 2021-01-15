@@ -6,8 +6,8 @@
 #
 
 #  Go to the script directory.
-VPN_SCRIPTREALPATH="`realpath \"$0\"`"
-cd "`dirname \"${VPN_SCRIPTREALPATH}\"`"
+SCRIPTREALPATH="`realpath \"$0\"`"
+cd "`dirname \"${SCRIPTREALPATH}\"`"
 
 #  Go to project root directory.
 cd ".."
