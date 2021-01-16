@@ -17,6 +17,8 @@ const MbTspSlRtuCRC16 =
     require("./slrtu-crc16");
 const MbTspSlDriverCore = 
     require("./../driver/sl-drivercore");
+const MbConventions = 
+    require("./../../../conventions");
 const MbError = 
     require("./../../../../error");
 const XRTLibAsync = 
@@ -67,6 +69,8 @@ const ReportBug =
 //  Imported constants.
 const MBSL_PARITY_NONE = 
     MbTspSlDriverCore.MBSL_PARITY_NONE;
+const MAX_PDU_LENGTH = 
+    MbConventions.MAX_PDU_LENGTH;
 
 //
 //  Constants.
@@ -78,7 +82,7 @@ const CHRTMSCL_MIN  = 1;
 const CHRTMSCL_MAX  = 512;
 
 //  RX buffer size.
-const RXBUFSIZE = 256;
+const RXBUFSIZE = MAX_PDU_LENGTH + 3;
 
 //  Minimum half-character time.
 const MIN_HCT = 250 * 1000;  //  250 microseconds.

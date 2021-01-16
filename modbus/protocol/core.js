@@ -9,15 +9,19 @@
 //
 
 //  Imported modules.
+const MbConventions = require("./../conventions");
 const MbError = require("./../../error");
+const Util = require("util");
 
 //  Imported classes.
 const MBParameterError = MbError.MBParameterError;
 
+//  Imported constants.
+const MAX_PDU_DATA_LENGTH = MbConventions.MAX_PDU_DATA_LENGTH;
+
 //
 //  Classes.
 //
-
 
 /**
  *  Modbus protocol data unit (PDU).
@@ -26,15 +30,16 @@ const MBParameterError = MbError.MBParameterError;
  *    [1] The function code must be an integer between 0x00 and 0xFF. A 
  *        MBParameterError would be thrown if the function code is invalid.
  *    [2] The Modbus Application Protocol specification specifies that the 
- *        maximum PDU length is 253, so the maximum data length of the PDU is 
- *        253 - 1 (the function code field) = 252. A MBParameterError would be 
- *        thrown if the data is longer than 252.
+ *        maximum PDU length is MAX_PDU_LENGTH, so the maximum data length of 
+ *        the PDU is MAX_PDU_LENGTH - 1 (the function code field) = 
+ *        MAX_PDU_DATA_LENGTH. A MBParameterError would be thrown if the data is
+ *        longer than MAX_PDU_DATA_LENGTH.
  * 
  *  @constructor
  *  @throws {MBParameterError}
  *    - One of following error(s) occurred:
  *      - Function code is invalid.
- *      - Data is too long (> 252).
+ *      - Data is too long (> MAX_PDU_DATA_LENGTH).
  *  @param {Number} functionCode 
  *    - The function code.
  *  @param {Buffer} data 
@@ -55,8 +60,11 @@ function MBPDU(functionCode, data) {
     }
 
     //  Check the data.
-    if (data.length > 252) {
-        throw new MBParameterError("Data is too long (> 252).");
+    if (data.length > MAX_PDU_DATA_LENGTH) {
+        throw new MBParameterError(Util.format(
+            "Data is too long (> %d).",
+            MAX_PDU_DATA_LENGTH
+        ));
     }
 
     //

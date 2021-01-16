@@ -5,6 +5,18 @@
 //
 
 //
+//  Imports.
+//
+
+//  Imported modules.
+const MbConventions = 
+    require("./../../../conventions");
+
+//  Imported constants.
+const MAX_PDU_LENGTH = 
+    MbConventions.MAX_PDU_LENGTH;
+
+//
 //  Constants.
 //
 
@@ -18,7 +30,7 @@ const ASCII_DIGIT_0  = 0x30;
 const ASCII_DIGIT_9  = 0x39;
 
 //  Frame size.
-const MAX_FRAME_SIZE = 513;
+const MAX_FRAME_SIZE = (3 + ((MAX_PDU_LENGTH + 2) << 1));
 
 //  Export public APIs.
 module.exports = {

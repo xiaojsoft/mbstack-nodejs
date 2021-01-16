@@ -9,12 +9,20 @@
 //
 
 //  Imported modules.
+const MbConventions = 
+    require("./../../../conventions");
 const MbError = 
     require("./../../../../error");
+const Util = 
+    require("util");
 
 //  Imported classes.
 const MBParameterError = 
     MbError.MBParameterError
+
+//  Imported constants.
+const MAX_PDU_DATA_LENGTH = 
+    MbConventions.MAX_PDU_DATA_LENGTH;
 
 //
 //  Classes.
@@ -26,7 +34,7 @@ const MBParameterError =
  *  Note(s):
  *    [1] The address must be an integer between 0x00 and 0xFF.
  *    [2] The function code must be an integer between 0x00 and 0xFF.
- *    [3] The length of the data must be no longer than 252.
+ *    [3] The length of the data must be no longer than MAX_PDU_DATA_LENGTH.
  * 
  *  @constructor
  *  @throws {MBParameterError}
@@ -66,8 +74,11 @@ function MBAsciiFrame(
     }
 
     //  Check the data.
-    if (data.length > 252) {
-        throw new MBParameterError("Data is too long (> 252).");
+    if (data.length > MAX_PDU_DATA_LENGTH) {
+        throw new MBParameterError(Util.format(
+            "Data is too long (> %d).", 
+            MAX_PDU_DATA_LENGTH
+        ));
     }
 
     //

@@ -9,8 +9,10 @@
 //
 
 //  Imported modules.
+const MbTspTcpConstants = require("./tcp-constants");
 const MbTspTcpFrame = require("./tcp-frame");
-const MbError = require("../../../error");
+const MbConventions = require("./../../conventions");
+const MbError = require("./../../../error");
 const XRTLibAsync = require("xrtlibrary-async");
 const XRTLibBugHandler = require("xrtlibrary-bughandler");
 const XRTLibTCPUtilities = require("xrtlibrary-tcputilities");
@@ -52,6 +54,12 @@ const CreatePreemptivePromise =
     XRTLibAsync.Asynchronize.Preempt.CreatePreemptivePromise;
 const ReportBug = 
     XRTLibBugHandler.ReportBug;
+
+//  Imported constants.
+const MBAP_PROTOID_MODBUS = 
+    MbTspTcpConstants.MBAP_PROTOID_MODBUS;
+const MAX_PDU_LENGTH = 
+    MbConventions.MAX_PDU_LENGTH;
 
 //
 //  Constants.
@@ -519,6 +527,14 @@ function MBTCPTransceiver(
             }
             if (protocolPayload.length != protocolPayloadLen) {
                 break;
+            }
+
+            //  Check protocol payload length for Modbus.
+            if (
+                protocolID == MBAP_PROTOID_MODBUS && 
+                protocolPayloadLen > MAX_PDU_LENGTH + 1
+            ) {
+                continue;
             }
 
             //  Build the frame object.

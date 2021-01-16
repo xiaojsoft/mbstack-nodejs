@@ -9,10 +9,17 @@
 //
 
 //  Imported modules.
+const MbTspTcpConstants = require("./tcp-constants");
+const MbConventions = require("./../../conventions");
 const MbError = require("./../../../error");
+const Util = require("util");
 
 //  Imported classes.
 const MBParameterError = MbError.MBParameterError;
+
+//  Imported constants.
+const MBAP_PROTOID_MODBUS = MbTspTcpConstants.MBAP_PROTOID_MODBUS;
+const MAX_PDU_LENGTH = MbConventions.MAX_PDU_LENGTH;
 
 //
 //  Classes.
@@ -45,6 +52,10 @@ const MBParameterError = MbError.MBParameterError;
  *    [4] The protocol payload must NOT be longer than 65535. A MBParameterError
  *        exception would be thrown if the protocol payload is longer than that 
  *        threshold.
+ *    [5] The maximum length Modbus protocol payload is MAX_PDU_LENGTH + 1, so
+ *        if the protocol identifier equals to MBAP_PROTOID_MODBUS and the 
+ *        protocol payload length is longer than MAX_PDU_LENGTH + 1, a 
+ *        MBParameterError would be thrown.
  * 
  *  @constructor
  *  @throws {MBParameterError}
@@ -52,6 +63,7 @@ const MBParameterError = MbError.MBParameterError;
  *      - Transaction identifier is invalid.
  *      - Protocol identifier is invalid.
  *      - Protocol payload is too long (> 65535).
+ *      - Protocol payload is too long for Modbus protocol (> 254).
  *  @param {Number} transactionID 
  *    - The transaction identifier.
  *  @param {Number} protocolID 
@@ -89,6 +101,15 @@ function MBTCPFrame(
     //  Check the protocol payload.
     if (protocolPayload.length > 65535) {
         throw new MBParameterError("Protocol payload is too long (> 65535).");
+    }
+    if (
+        protocolID == MBAP_PROTOID_MODBUS && 
+        protocolPayload.length > MAX_PDU_LENGTH + 1
+    ) {
+        throw new MBParameterError(Util.format(
+            "Protocol payload is too long for Modbus protocol (> %d).",
+            MAX_PDU_LENGTH + 1
+        ));
     }
 
     //
