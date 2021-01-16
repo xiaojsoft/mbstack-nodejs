@@ -218,13 +218,56 @@ function MBSlaveService(
         let syncWorkerExited = new ConditionalSynchronizer();
         (function(_workerId) {
             (async function() {
-                while (true) {
-                    //  Poll for a transaction.
-                    /**
-                     *  @type {?IMBSlaveTransaction}
-                     */
-                    let transaction = null;
-                    {
+                /*
+                 *  Here is the diagram of the worker state machine:
+                 * 
+                 *                                  [4]      +----------+
+                 *                             +-----------> | FINALIZE |
+                 *                             |             +----------+
+                 *                             |
+                 *          +------------------+-------------------+
+                 *          |                  |                   |
+                 *          |                  |                   |
+                 *       +------+  [1]   +-----------+  [2]   +---------+
+                 *  ---> | POLL | -----> | TR_HANDLE | -----> | TR_WAIT |
+                 *       +------+        +-----------+        +---------+
+                 *          ^                                      |
+                 *          |                                      |
+                 *          +--------------------------------------+
+                 *                             [3]
+                 * 
+                 *  Transition condition:
+                 * 
+                 *    [1] Got one transaction.
+                 *    [2] Two posibilities:
+                 *          - The unit ID is not accepted by the data model.
+                 *            The transaction was ignored.
+                 *          - No answer needed. The transaction was ignored.
+                 *          - Answer needed. The transaction was answered.
+                 *    [3] Transaction settled.
+                 *    [4] Close/terminate signal was received.
+                 * 
+                 */
+
+                const WKSTATE_POLL = 1;
+                const WKSTATE_TRANSACTION_HANDLE = 2;
+                const WKSTATE_TRANSACTION_WAIT = 3;
+                const WKSTATE_FINALIZE = 4;
+
+                //  Transaction.
+                /**
+                 *  @type {?IMBSlaveTransaction}
+                 */
+                let transaction = null;
+
+                //  Run the state machine.
+                let state = WKSTATE_POLL;
+                while(true) {
+                    if (state == WKSTATE_POLL) {
+                        //
+                        //  Poll for a transaction.
+                        //
+
                         //  Wait for signals.
                         let cts = new ConditionalSynchronizer();
                         let wh1 = layerTransport.poll(cts);
@@ -242,7 +285,9 @@ function MBSlaveService(
                                 error = error.getReason();
                             }
                             if (error instanceof MBInvalidOperationError) {
-                                break;
+                                //  Go to FINALIZE state.
+                                state = WKSTATE_FINALIZE;
+                                continue;
                             }
                             throw error;
                         } finally {
@@ -252,7 +297,11 @@ function MBSlaveService(
                         //  Handle the signal.
                         let wh = rsv.getPromiseObject();
                         if (wh == wh1) {
+                            //  Get the transaction.
                             transaction = rsv.getValue();
+
+                            //  Go to TRANSACTION_HANDLE state.
+                            state = WKSTATE_TRANSACTION_HANDLE;
                         } else {
                             //  Wait for wait handler 1 to be settled.
                             try {
@@ -265,7 +314,8 @@ function MBSlaveService(
 
                             //  Handle other signals.
                             if (wh == wh2 || wh == wh3) {
-                                break;
+                                //  Go to FINALIZE state.
+                                state = WKSTATE_FINALIZE;
                             } else {
                                 ReportBug(
                                     "Invalid wait handler.", 
@@ -274,50 +324,57 @@ function MBSlaveService(
                                 );
                             }
                         }
-                    }
+                    } else if (state == WKSTATE_TRANSACTION_HANDLE) {
+                        //  Get the query.
+                        let query = transaction.getQuery();
+    
+                        //  Get and select the unit ID.
+                        let queryUnitID = query.getUnitID();
+                        try {
+                            model.select(queryUnitID);
+                        } catch(error) {
+                            //  Skip this transaction if select node is not 
+                            //  accepted by the data model.
+                            transaction.ignore();
+                            if (!(error instanceof MBInvalidNodeError)) {
+                                ReportBug(
+                                    "Not a MBInvalidNodeError exception.", 
+                                    false, 
+                                    MBBugError
+                                );
+                            }
 
-                    //  Get the query.
-                    let query = transaction.getQuery();
-
-                    //  Get and select the unit ID.
-                    let queryUnitID = query.getUnitID();
-                    try {
-                        model.select(queryUnitID);
-                    } catch(error) {
-                        //  Skip this transaction if select node is not accepted
-                        //  by the data model.
-                        transaction.ignore();
-                        if (!(error instanceof MBInvalidNodeError)) {
-                            ReportBug(
-                                "Not a MBInvalidNodeError exception.", 
-                                false, 
-                                MBBugError
-                            );
+                            //  Go to TRANSACTION_WAIT state.
+                            state = WKSTATE_TRANSACTION_WAIT;
+                            continue;
                         }
-                        continue;
-                    }
+    
+                        //  Get the query PDU.
+                        let queryPDU = new MBPDU(
+                            query.getFunctionCode(), 
+                            query.getData()
+                        );
+    
+                        //  Handle the query.
+                        let answerPDU = serviceHost.handle(model, queryPDU);
+    
+                        //  Answer the transaction.
+                        if (answerPDU === null) {
+                            transaction.ignore();
+                        } else {
+                            transaction.answer(new MBTransportAnswer(
+                                answerPDU.getFunctionCode(), 
+                                answerPDU.getData()
+                            ));
+                        }
 
-                    //  Get the query PDU.
-                    let queryPDU = new MBPDU(
-                        query.getFunctionCode(), 
-                        query.getData()
-                    );
+                        //  Go to TRANSACTION_WAIT state.
+                        state = WKSTATE_TRANSACTION_WAIT;
+                    } else if (state == WKSTATE_TRANSACTION_WAIT) {
+                        //
+                        //  Wait for the transaction to be settled.
+                        //
 
-                    //  Handle the query.
-                    let answerPDU = serviceHost.handle(model, queryPDU);
-
-                    //  Answer the transaction.
-                    if (answerPDU === null) {
-                        transaction.ignore();
-                    } else {
-                        transaction.answer(new MBTransportAnswer(
-                            answerPDU.getFunctionCode(), 
-                            answerPDU.getData()
-                        ));
-                    }
-
-                    //  Wait for the transaction to be settled.
-                    {
                         //  Wait for signals.
                         let cts = new ConditionalSynchronizer();
                         let wh1 = transaction.wait(cts);
@@ -333,9 +390,11 @@ function MBSlaveService(
                         //  Handle the signal.
                         let wh = rsv.getPromiseObject();
                         if (wh == wh1) {
-                            //  Do nothing.
+                            //  Go to POLL state.
+                            state = WKSTATE_POLL;
                         } else if (wh == wh2 || wh == wh3) {
-                            break;
+                            //  Go to FINALIZE state.
+                            state = WKSTATE_FINALIZE;
                         } else {
                             ReportBug(
                                 "Invalid wait handler.", 
@@ -343,6 +402,10 @@ function MBSlaveService(
                                 MBBugError
                             );
                         }
+                    } else if (state == WKSTATE_FINALIZE) {
+                        break;
+                    } else {
+                        ReportBug("Invalid state.", true, MBBugError);
                     }
                 }
             })().catch(function(error) {
@@ -360,6 +423,23 @@ function MBSlaveService(
 
     //  Main coroutine.
     (async function() {
+        /* 
+         *  Here is the diagram of the main coroutine state machine:
+         * 
+         *       +------+  [2]   +---------+  [1]   +--------+
+         *  ---> | WAIT | -----> | CLOSING | -----> | CLOSED | ---> ...
+         *       +------+        +---------+        +--------+
+         *          |                                    ^
+         *          |                                    |
+         *          +------------------------------------+
+         *                           [1]
+         * 
+         *  Transition conditions:
+         * 
+         *    [1] Terminate signal was received.
+         *    [2] Close signal was received.
+         * 
+         */
         const CRTSTATE_WAIT = 0;
         const CRTSTATE_CLOSING = 1;
         const CRTSTATE_CLOSED = 2;
