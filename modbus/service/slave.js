@@ -598,21 +598,72 @@ function MBSlaveService(
                         //  Handle the query.
                         let answerPDU = null;
                         try {
-                            answerPDU = serviceHost.handle(
+                            //  Wait for signals.
+                            let cts = new ConditionalSynchronizer();
+                            let wh1 = serviceHost.handle(
                                 model, 
                                 queryPDU, 
-                                swListenOnly
+                                swListenOnly,
+                                cts
                             );
-                        } catch(error) {
-                            if (error instanceof MBFunctionProhibitedError) {
-                                //  No response.
-                                answerPDU = null;
+                            let wh2 = syncCmdClose.waitWithCancellator(cts);
+                            let wh3 = syncCmdTerminate.waitWithCancellator(cts);
+                            let rsv = null;
+                            try {
+                                rsv = await CreatePreemptivePromise([
+                                    wh1, 
+                                    wh2, 
+                                    wh3
+                                ]);
+                            } catch(error) {
+                                if (error instanceof PreemptReject) {
+                                    error = error.getReason();
+                                }
+                                if (
+                                    error instanceof MBFunctionProhibitedError
+                                ) {
+                                    //  No response.
+                                    transaction.ignore();
+    
+                                    //  Increase the Slave Exception Error Count 
+                                    //  counter.
+                                    ++(cntrSlaveExError);
+    
+                                    //  Go to TRANSACTION_WAIT state.
+                                    state = WKSTATE_TRANSACTION_WAIT;
+    
+                                    continue;
+                                } else {
+                                    throw error;
+                                }
+                            } finally {
+                                cts.fullfill();
+                            }
 
-                                //  Increase the Slave Exception Error Count 
-                                //  counter.
-                                ++(cntrSlaveExError);
+                            //  Handle the signal.
+                            let wh = rsv.getPromiseObject();
+                            if (wh == wh1) {
+                                answerPDU = rsv.getValue();
                             } else {
-                                throw error;
+                                //  Wait for wait handler 1 to be settled.
+                                try {
+                                    await wh1;
+                                } catch(error) {
+                                    //  Operation cancelled. Do nothing.
+                                }
+
+                                //  Handle other signals.
+                                if (wh == wh2 || wh == wh3) {
+                                    //  Go to FINALIZE state.
+                                    state = WKSTATE_FINALIZE;
+                                    continue;
+                                } else {
+                                    ReportBug(
+                                        "Invalid wait handler.", 
+                                        true, 
+                                        MBBugError
+                                    );
+                                }
                             }
                         } finally {
                             //  Release the transaction lock.

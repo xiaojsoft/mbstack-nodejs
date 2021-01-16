@@ -15,6 +15,8 @@ const MbPrCore =
     require("./../../core");
 const MbPrExceptions = 
     require("./../../exceptions");
+const XRTLibAsync = 
+    require("xrtlibrary-async");
 const Util = 
     require("util");
 
@@ -23,6 +25,8 @@ const IMBSlaveProtocolService =
     MbPrSlaveService.IMBSlaveProtocolService;
 const MBPDU = 
     MbPrCore.MBPDU;
+const ConditionalSynchronizer = 
+    XRTLibAsync.Synchronize.Conditional.ConditionalSynchronizer;
 
 //  Imported constants.
 const MBEX_ILLEGAL_DATA_ADDRESS = 
@@ -81,15 +85,25 @@ function MBSlaveProtocolReadInputRegisterService() {
      * 
      *  @throws {MBFunctionProhibitedError}
      *    - Function prohibited in broadcast message.
+     *  @throws {MBOperationCancelledError}
+     *    - The cancellator was activated.
      *  @param {IMBDataModel} model
      *    - The data model.
      *  @param {MBPDU} pdu 
      *    - The request (query) protocol data unit (PDU).
-     *  @returns {?MBPDU}
-     *    - The response (answer) protocol data unit (PDU).
-     *    - NULL if no response is needed.
+     *  @param {ConditionalSynchronizer} [cancellator] 
+     *    - The cancellator.
+     *  @returns {Promise<?MBPDU>}
+     *    - The promise object (resolves with the response (answer) protocol 
+     *      data unit (PDU) if succeed and response is needed, resolves with 
+     *      NULL if succeed and no response is needed, rejects if error 
+     *      occurred).
      */
-    this.handle = function(model, pdu) {
+    this.handle = async function(
+        model, 
+        pdu, 
+        cancellator = new ConditionalSynchronizer()
+    ) {
         //  Get the query function code.
         let queryFunctionCode = pdu.getFunctionCode();
 

@@ -17,6 +17,8 @@ const MbMdCore =
     require("./../../model/core");
 const MbError = 
     require("./../../../error");
+const XRTLibAsync = 
+    require("xrtlibrary-async");
 
 //  Imported classes.
 const MBPDU = 
@@ -29,6 +31,10 @@ const MBProtocolServiceNotExistError =
     MbError.MBProtocolServiceNotExistError;
 const MBFunctionProhibitedError = 
     MbError.MBFunctionProhibitedError;
+const MBOperationCancelledError = 
+    MbError.MBOperationCancelledError;
+const ConditionalSynchronizer = 
+    XRTLibAsync.Synchronize.Conditional.ConditionalSynchronizer;
 
 //  Imported constants.
 const MBEX_ILLEGAL_FUNCTION = 
@@ -79,15 +85,25 @@ function IMBSlaveProtocolService() {
      * 
      *  @throws {MBFunctionProhibitedError}
      *    - Function prohibited in broadcast message.
+     *  @throws {MBOperationCancelledError}
+     *    - The cancellator was activated.
      *  @param {IMBDataModel} model
      *    - The data model.
      *  @param {MBPDU} pdu 
      *    - The request (query) protocol data unit (PDU).
-     *  @returns {?MBPDU}
-     *    - The response (answer) protocol data unit (PDU).
-     *    - NULL if no response is needed.
+     *  @param {ConditionalSynchronizer} [cancellator] 
+     *    - The cancellator.
+     *  @returns {Promise<?MBPDU>}
+     *    - The promise object (resolves with the response (answer) protocol 
+     *      data unit (PDU) if succeed and response is needed, resolves with 
+     *      NULL if succeed and no response is needed, rejects if error 
+     *      occurred).
      */
-    this.handle = function(model, pdu) {
+    this.handle = async function(
+        model, 
+        pdu, 
+        cancellator = new ConditionalSynchronizer()
+    ) {
         throw new Error("Not implemented.");
     };
 }
@@ -150,17 +166,28 @@ function MBSlaveProtocolServiceHost() {
      * 
      *  @throws {MBFunctionProhibitedError}
      *    - Function prohibited in broadcast message.
+     *  @throws {MBOperationCancelledError}
+     *    - The cancellator was activated.
      *  @param {IMBDataModel} model
      *    - The data model.
      *  @param {MBPDU} pdu 
      *    - The request (query) protocol data unit (PDU).
      *  @param {Boolean} [listenOnly]
      *    - True if the query is currently being handled in listen-only mode.
-     *  @returns {?MBPDU}
-     *    - The response (answer) protocol data unit (PDU).
-     *    - NULL if no response is needed.
+     *  @param {ConditionalSynchronizer} [cancellator] 
+     *    - The cancellator.
+     *  @returns {Promise<?MBPDU>}
+     *    - The promise object (resolves with the response (answer) protocol 
+     *      data unit (PDU) if succeed and response is needed, resolves with 
+     *      NULL if succeed and no response is needed, rejects if error 
+     *      occurred).
      */
-    this.handle = function(model, pdu, listenOnly = false) {
+    this.handle = async function(
+        model, 
+        pdu, 
+        listenOnly = false, 
+        cancellator = new ConditionalSynchronizer()
+    ) {
         //  Get the request (query) function code.
         let fnCode = pdu.getFunctionCode();
 
@@ -184,7 +211,7 @@ function MBSlaveProtocolServiceHost() {
         }
 
         //  Let the service handle the PDU.
-        return service.handle(model, pdu);
+        return await service.handle(model, pdu, cancellator);
     };
 }
 
