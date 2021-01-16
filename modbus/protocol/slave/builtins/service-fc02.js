@@ -15,8 +15,12 @@ const MbPrCore =
     require("./../../core");
 const MbPrExceptions = 
     require("./../../exceptions");
+const MbError = 
+    require("./../../../../error");
 const XRTLibAsync = 
     require("xrtlibrary-async");
+const XRTLibBugHandler = 
+    require("xrtlibrary-bughandler");
 const Util = 
     require("util");
 
@@ -25,8 +29,18 @@ const IMBSlaveProtocolService =
     MbPrSlaveService.IMBSlaveProtocolService;
 const MBPDU = 
     MbPrCore.MBPDU;
+const MBBugError = 
+    MbError.MBBugError;
+const MBOperationCancelledError = 
+    MbError.MBOperationCancelledError;
 const ConditionalSynchronizer = 
     XRTLibAsync.Synchronize.Conditional.ConditionalSynchronizer;
+
+//  Imported functions.
+const CreatePreemptivePromise = 
+    XRTLibAsync.Asynchronize.Preempt.CreatePreemptivePromise;
+const ReportBug = 
+    XRTLibBugHandler.ReportBug;
 
 //  Imported constants.
 const MBEX_ILLEGAL_DATA_ADDRESS = 
@@ -150,6 +164,44 @@ function MBSlaveProtocolReadDiscreteInputService() {
                     MBEX_ILLEGAL_DATA_ADDRESS
                 );
             }
+
+            //  Prefetch discrete input information.
+            {
+                //  Wait for signals.
+                let cts = new ConditionalSynchronizer();
+                let wh1 = model.prefetchDiscreteInput(
+                    dciStartAddr, 
+                    dciQuantity, 
+                    cts
+                );
+                let wh2 = cancellator.waitWithCancellator(cts);
+                let rsv = await CreatePreemptivePromise([wh1, wh2]);
+                cts.fullfill();
+
+                //  Handle the signal.
+                let wh = rsv.getPromiseObject();
+                if (wh == wh1) {
+                    //  Do nothing.
+                } else {
+                    //  Wait for wait handler 1 to be settled.
+                    try {
+                        await wh1;
+                    } catch(error) {
+                        //  Operation cancelled. Do nothing.
+                    }
+
+                    //  Handle the signal.
+                    if (wh == wh2) {
+                        throw new MBOperationCancelledError(
+                            "The cancellator was activated."
+                        );
+                    } else {
+                        ReportBug("Invalid wait handler.", true, MBBugError);
+                    }
+                }
+            }
+
+            //  Validate each discrete input.
             for (
                 let dciAddr = dciStartAddr; 
                 dciAddr < dciStartAddr + dciQuantity; 
@@ -192,6 +244,12 @@ function MBSlaveProtocolReadDiscreteInputService() {
 
             return new MBPDU(queryFunctionCode, Buffer.from(dciStatusBytes));
         } catch(error) {
+            //  Throw operation cancelled exception.
+            if (error instanceof MBOperationCancelledError) {
+                throw error;
+            }
+
+            //  Return an exception.
             return MBPDU.NewException(
                 queryFunctionCode, 
                 MBEX_SERVER_DEVICE_FAILURE

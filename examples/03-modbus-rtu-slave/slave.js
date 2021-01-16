@@ -171,6 +171,34 @@ function MBExampleDataModel() {
     };
 
     /**
+     *  Prefetch discrete input(s).
+     * 
+     *  Note(s):
+     *    [1] (To implementer) This method is used to prefetch information of 
+     *        consequent discrete inputs. In general, if all needed information 
+     *        (including the validity and value of each discrete input) can be 
+     *        read/get synchronously, you can simply leave this empty.
+     *        If some needed information can't be read/get synchronously, you 
+     *        have to prefetch these information to this data model.
+     * 
+     *  @throws {MBOperationCancelledError}
+     *    - The cancellator was activated.
+     *  @param {Number} address
+     *    - The starting address of the discrete input(s) to be prefetched.
+     *  @param {Number} count
+     *    - The quantity of the discrete input(s) to be prefetched.
+     *  @returns {Promise<void>}
+     *    - The promise object (resolves if succeed, rejects if error occurred).
+     */
+    this.prefetchDiscreteInput = async function(
+        address,
+        count,
+        cancellator = new ConditionalSynchronizer()
+    ) {
+        //  Do nothing.
+    };
+
+    /**
      *  Check whether the address of a discrete input is valid.
      * 
      *  @param {Number} address 
@@ -207,6 +235,34 @@ function MBExampleDataModel() {
             throw new MBInvalidDataAddressError("Invalid address.");
         }
         return coils[address];
+    };
+
+    /**
+     *  Prefetch coil(s).
+     * 
+     *  Note(s):
+     *    [1] (To implementer) This method is used to prefetch information of 
+     *        consequent coils. In general, if all needed information (including
+     *        the validity and value of each coil) can be read/get 
+     *        synchronously, you can simply leave this empty.
+     *        If some needed information can't be read/get synchronously, you 
+     *        have to prefetch these information to this data model.
+     * 
+     *  @throws {MBOperationCancelledError}
+     *    - The cancellator was activated.
+     *  @param {Number} address
+     *    - The starting address of the coil(s) to be prefetched.
+     *  @param {Number} count
+     *    - The quantity of the coil(s) to be prefetched.
+     *  @returns {Promise<void>}
+     *    - The promise object (resolves if succeed, rejects if error occurred).
+     */
+    this.prefetchCoil = async function(
+        address,
+        count,
+        cancellator = new ConditionalSynchronizer()
+    ) {
+        //  Do nothing.
     };
 
     /**
@@ -271,6 +327,34 @@ function MBExampleDataModel() {
     };
 
     /**
+     *  Prefetch input register(s).
+     * 
+     *  Note(s):
+     *    [1] (To implementer) This method is used to prefetch information of 
+     *        consequent input registers. In general, if all needed information 
+     *        (including the validity and value of each input register) can be 
+     *        read/get synchronously, you can simply leave this empty.
+     *        If some needed information can't be read/get synchronously, you 
+     *        have to prefetch these information to this data model.
+     * 
+     *  @throws {MBOperationCancelledError}
+     *    - The cancellator was activated.
+     *  @param {Number} address
+     *    - The starting address of the input register(s) to be prefetched.
+     *  @param {Number} count
+     *    - The quantity of the input register(s) to be prefetched.
+     *  @returns {Promise<void>}
+     *    - The promise object (resolves if succeed, rejects if error occurred).
+     */
+    this.prefetchInputRegister = async function(
+        address,
+        count,
+        cancellator = new ConditionalSynchronizer()
+    ) {
+        //  Do nothing.
+    };
+
+    /**
      *  Check whether the address of an input register is valid.
      * 
      *  @param {Number} address 
@@ -307,6 +391,35 @@ function MBExampleDataModel() {
             throw new MBInvalidDataAddressError("Invalid address.");
         }
         return regs[address];
+    };
+
+    /**
+     *  Prefetch holding register(s).
+     * 
+     *  Note(s):
+     *    [1] (To implementer) This method is used to prefetch information of 
+     *        consequent holding registers. In general, if all needed 
+     *        information (including the validity and value of each holding 
+     *        register) can be read/get synchronously, you can simply leave this
+     *        empty.
+     *        If some needed information can't be read/get synchronously, you 
+     *        have to prefetch these information to this data model.
+     * 
+     *  @throws {MBOperationCancelledError}
+     *    - The cancellator was activated.
+     *  @param {Number} address
+     *    - The starting address of the holding register(s) to be prefetched.
+     *  @param {Number} count
+     *    - The quantity of the holding register(s) to be prefetched.
+     *  @returns {Promise<void>}
+     *    - The promise object (resolves if succeed, rejects if error occurred).
+     */
+    this.prefetchHoldingRegister = async function(
+        address,
+        count,
+        cancellator = new ConditionalSynchronizer()
+    ) {
+        //  Do nothing.
     };
 
     /**
