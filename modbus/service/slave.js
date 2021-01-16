@@ -13,6 +13,7 @@ const MbMdCore = require("./../model/core");
 const MbPrCore = require("./../protocol/core");
 const MbPrSlaveLayer = require("./../protocol/slave/layer");
 const MbTrCore = require("./../transport/core");
+const MbCounters = require("./../counters");
 const MbError = require("./../../error");
 const XRTLibAsync = require("xrtlibrary-async");
 const XRTLibBugHandler = require("xrtlibrary-bughandler");
@@ -57,6 +58,14 @@ const ReportBug =
     XRTLibBugHandler.ReportBug;
 const CreatePreemptivePromise = 
     XRTLibAsync.Asynchronize.Preempt.CreatePreemptivePromise;
+
+//  Imported constants.
+const CNTRNO_SLVEXCERROR = 
+    MbCounters.CNTRNO_SLVEXCERROR;
+const CNTRNO_SLVMESSAGE = 
+    MbCounters.CNTRNO_SLVMESSAGE;
+const CNTRNO_SLVNORESP = 
+    MbCounters.CNTRNO_SLVNORESP;
 
 //
 //  Constants.
@@ -138,6 +147,9 @@ function MBSlaveService(
     //  Members.
     //
 
+    //  Self reference.
+    let self = this;
+
     //  Protocol-layer service host.
     let serviceHost = layerProtocol.getServiceHost();
 
@@ -217,6 +229,89 @@ function MBSlaveService(
      */
     this.getSlaveExceptionErrorCount = function() {
         return cntrSlaveExError;
+    };
+
+    /**
+     *  Reset the value of specified counter.
+     * 
+     *  Note(s):
+     *    [1] No action if the counter is not available.
+     * 
+     *  @param {Number} cntrid
+     *    - The counter ID.
+     */
+    this.resetCounterValue = function(cntrid) {
+        switch (cntrid) {
+        case CNTRNO_SLVEXCERROR:
+            self.resetSlaveExceptionErrorCount();
+            break;
+        case CNTRNO_SLVMESSAGE:
+            self.resetSlaveMessageCount();
+            break;
+        case CNTRNO_SLVNORESP:
+            self.resetSlaveNoResponseCount();
+            break;
+        default:
+            break;
+        }
+        layerTransport.resetCounterValue(cntrid);
+    };
+
+    /**
+     *  Get the value of specified counter.
+     * 
+     *  Note(s):
+     *    [1] 0n would be returned if the counter is not available.
+     * 
+     *  @param {Number} cntrid
+     *    - The counter ID.
+     *  @returns {BigInt}
+     *    - The counter value.
+     */
+    this.getCounterValue = function(cntrid) {
+        let cntrval = 0n;
+        switch (cntrid) {
+        case CNTRNO_SLVEXCERROR:
+            cntrval = self.getSlaveExceptionErrorCount();
+            break;
+        case CNTRNO_SLVMESSAGE:
+            cntrval = self.getSlaveMessageCount();
+            break;
+        case CNTRNO_SLVNORESP:
+            cntrval = self.getSlaveNoResponseCount();
+            break;
+        default:
+            break;
+        }
+        cntrval += layerTransport.getCounterValue(cntrid);
+        return cntrval;
+    };
+
+    /**
+     *  Get available counters.
+     * 
+     *  @returns {Set<Number>}
+     *    - The set that contains the ID of all available counters.
+     */
+    this.getAvailableCounters = function() {
+        let ret = new Set([
+            CNTRNO_SLVEXCERROR,
+            CNTRNO_SLVMESSAGE,
+            CNTRNO_SLVNORESP
+        ]);
+        layerTransport.getAvailableCounters().forEach(function(cntrid) {
+            ret.add(cntrid);
+        });
+        return ret;
+    };
+
+    /**
+     *  Reset the value of all available counters.
+     */
+    this.resetAllCounters = function() {
+        self.getAvailableCounters().forEach(function(cntrid) {
+            self.resetCounterValue(cntrid);
+        });
     };
 
     /**

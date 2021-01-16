@@ -646,6 +646,44 @@ function MBTCPSlaveTransport(
     //
 
     /**
+     *  Reset the value of specified counter.
+     * 
+     *  Note(s):
+     *    [1] No action if the counter is not available.
+     * 
+     *  @param {Number} cntrid
+     *    - The counter ID.
+     */
+    this.resetCounterValue = function(cntrid) {
+        //  Do nothing.
+    };
+
+    /**
+     *  Get the value of specified counter.
+     * 
+     *  Note(s):
+     *    [1] 0n would be returned if the counter is not available.
+     * 
+     *  @param {Number} cntrid
+     *    - The counter ID.
+     *  @returns {BigInt}
+     *    - The counter value.
+     */
+    this.getCounterValue = function(cntrid) {
+        return 0n;
+    };
+
+    /**
+     *  Get available counters.
+     * 
+     *  @returns {Set<Number>}
+     *    - The set that contains the ID of all available counters.
+     */
+    this.getAvailableCounters = function() {
+        return new Set();
+    };
+
+    /**
      *  Poll for a transaction.
      * 
      *  @throws {MBInvalidOperationError}

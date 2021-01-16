@@ -439,6 +439,44 @@ function IMBSlaveTransport() {
     //
 
     /**
+     *  Reset the value of specified counter.
+     * 
+     *  Note(s):
+     *    [1] No action if the counter is not available.
+     * 
+     *  @param {Number} cntrid
+     *    - The counter ID.
+     */
+    this.resetCounterValue = function(cntrid) {
+        throw new Error("Not implemented.");
+    };
+
+    /**
+     *  Get the value of specified counter.
+     * 
+     *  Note(s):
+     *    [1] 0n would be returned if the counter is not available.
+     * 
+     *  @param {Number} cntrid
+     *    - The counter ID.
+     *  @returns {BigInt}
+     *    - The counter value.
+     */
+    this.getCounterValue = function(cntrid) {
+        throw new Error("Not implemented.");
+    };
+
+    /**
+     *  Get available counters.
+     * 
+     *  @returns {Set<Number>}
+     *    - The set that contains the ID of all available counters.
+     */
+    this.getAvailableCounters = function() {
+        throw new Error("Not implemented.");
+    };
+
+    /**
      *  Poll for a transaction.
      * 
      *  @throws {MBInvalidOperationError}

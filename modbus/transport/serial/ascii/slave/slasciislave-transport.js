@@ -21,6 +21,8 @@ const MbTspSlDriverRegistry =
     require("./../../driver/sl-driverregistry");
 const MbTspCore = 
     require("./../../../core");
+const MbCounters = 
+    require("./../../../../counters");
 const MbError = 
     require("./../../../../../error");
 const XRTLibAsync = 
@@ -95,7 +97,13 @@ const MBSL_STOPBIT_1 =
     MbTspSlDriverCore.MBSL_STOPBIT_1;
 const MBSL_STOPBIT_2 = 
     MbTspSlDriverCore.MBSL_STOPBIT_2;
-
+const CNTRNO_BUSMESSAGE = 
+    MbCounters.CNTRNO_BUSMESSAGE;
+const CNTRNO_BUSCOMERROR = 
+    MbCounters.CNTRNO_BUSCOMERROR;
+const CNTRNO_BUSCHROVR = 
+    MbCounters.CNTRNO_BUSCHROVR;
+    
 //
 //  Constants.
 //
@@ -317,6 +325,69 @@ function MBAsciiSlaveTransport(
     //
     //  Public methods.
     //
+
+    /**
+     *  Reset the value of specified counter.
+     * 
+     *  Note(s):
+     *    [1] No action if the counter is not available.
+     * 
+     *  @param {Number} cntrid
+     *    - The counter ID.
+     */
+    this.resetCounterValue = function(cntrid) {
+        switch (cntrid) {
+        case CNTRNO_BUSMESSAGE:
+            rxtx.resetBusMessageCount();
+            break;
+        case CNTRNO_BUSCOMERROR:
+            rxtx.resetBusErrorCount();
+            break;
+        case CNTRNO_BUSCHROVR:
+            rxtx.resetBusOverrunCount();
+            break;
+        default:
+            break;
+        }
+    };
+
+    /**
+     *  Get the value of specified counter.
+     * 
+     *  Note(s):
+     *    [1] 0n would be returned if the counter is not available.
+     * 
+     *  @param {Number} cntrid
+     *    - The counter ID.
+     *  @returns {BigInt}
+     *    - The counter value.
+     */
+    this.getCounterValue = function(cntrid) {
+        switch (cntrid) {
+        case CNTRNO_BUSMESSAGE:
+            return rxtx.getBusMessageCount();
+        case CNTRNO_BUSCOMERROR:
+            return rxtx.getBusErrorCount();
+        case CNTRNO_BUSCHROVR:
+            return rxtx.getBusOverrunCount();
+        default:
+            return 0n;
+        }
+    };
+
+    /**
+     *  Get available counters.
+     * 
+     *  @returns {Set<Number>}
+     *    - The set that contains the ID of all available counters.
+     */
+    this.getAvailableCounters = function() {
+        return new Set([
+            CNTRNO_BUSMESSAGE, 
+            CNTRNO_BUSCOMERROR, 
+            CNTRNO_BUSCHROVR
+        ]);
+    };
 
     /**
      *  Poll for a transaction.
