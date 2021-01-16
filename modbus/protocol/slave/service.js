@@ -19,6 +19,7 @@ const MBPDU = MbPrCore.MBPDU;
 const IMBDataModel = MbMdCore.IMBDataModel;
 const MBProtocolServiceExistedError = MbError.MBProtocolServiceExistedError;
 const MBProtocolServiceNotExistError = MbError.MBProtocolServiceNotExistError;
+const MBFunctionProhibitedError = MbError.MBFunctionProhibitedError;
 
 //  Imported constants.
 const MBEX_ILLEGAL_FUNCTION = MbPrExceptions.MBEX_ILLEGAL_FUNCTION;
@@ -56,6 +57,8 @@ function IMBSlaveProtocolService() {
      *        service. No redundant check would be performed when handles the 
      *        request (query).
      * 
+     *  @throws {MBFunctionProhibitedError}
+     *    - Function prohibited in broadcast message.
      *  @param {IMBDataModel} model
      *    - The data model.
      *  @param {MBPDU} pdu 
@@ -129,6 +132,8 @@ function MBSlaveProtocolServiceHost() {
      *    - The data model.
      *  @param {MBPDU} pdu 
      *    - The request (query) protocol data unit (PDU).
+     *  @throws {MBFunctionProhibitedError}
+     *    - Function prohibited in broadcast message.
      *  @returns {?MBPDU}
      *    - The response (answer) protocol data unit (PDU).
      *    - NULL if no response is needed.

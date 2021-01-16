@@ -221,6 +221,8 @@ const MBTimeoutError =
     MbError.MBTimeoutError;
 const MBDeviceError = 
     MbError.MBDeviceError;
+const MBFunctionProhibitedError = 
+    MbError.MBFunctionProhibitedError;
 
 //  Imported functions.
 const NewReadCoilsCommand = 
@@ -500,6 +502,8 @@ module.exports = {
         "MBTimeoutError": 
             MBTimeoutError,
         "MBDeviceError": 
-            MBDeviceError
+            MBDeviceError,
+        "MBFunctionProhibitedError": 
+            MBFunctionProhibitedError
     }
 };

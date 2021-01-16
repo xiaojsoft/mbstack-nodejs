@@ -45,6 +45,8 @@ const MBInitiateError =
     MbError.MBInitiateError;
 const MBBugError = 
     MbError.MBBugError;
+const MBFunctionProhibitedError = 
+    MbError.MBFunctionProhibitedError;
 const ConditionalSynchronizer = 
     XRTLibAsync.Synchronize.Conditional.ConditionalSynchronizer;
 const PreemptReject = 
@@ -144,12 +146,78 @@ function MBSlaveService(
     let syncCmdTerminate = new ConditionalSynchronizer();
     let syncClosed = new ConditionalSynchronizer();
     
+    //  Counters.
+    let cntrSlaveMessage = 0n;
+    let cntrSlaveNoResp  = 0n;
+    let cntrSlaveExError = 0n;
+
     //  Worker count.
     let nWorkers = options.getWorkerCount();
 
     //
     //  Public methods.
     //
+
+    /**
+     *  Reset the Slave Message Count counter.
+     */
+    this.resetSlaveMessageCount = function() {
+        cntrSlaveMessage = 0n;
+    };
+
+    /**
+     *  Get the value of the Slave Message Count counter.
+     * 
+     *  Note(s):
+     *    [1] The Slave Message Count counter saves the quantity of messages 
+     *        addressed to the slave (including broadcast messages).
+     * 
+     *  @returns {BigInt}
+     *    - The value.
+     */
+    this.getSlaveMessageCount = function() {
+        return cntrSlaveMessage;
+    };
+
+    /**
+     *  Reset the Slave No Response Count counter.
+     */
+    this.resetSlaveNoResponseCount = function() {
+        cntrSlaveNoResp = 0n;
+    };
+
+    /**
+     *  Get the value of the Slave No Response Count counter.
+     * 
+     *  Note(s):
+     *    [1] The Slave No Response Count counter saves the quantity of messages
+     *        addressed to the slave (including broadcast messages) and the 
+     *        slave returned no response (neither a normal response nor an 
+     *        exception response).
+     * 
+     *  @returns {BigInt}
+     *    - The value.
+     */
+    this.getSlaveNoResponseCount = function() {
+        return cntrSlaveNoResp;
+    };
+
+    /**
+     *  Reset the Slave Exception Error Count counter.
+     */
+    this.resetSlaveExceptionErrorCount = function() {
+        cntrSlaveExError = 0n;
+    };
+
+    /**
+     *  Get the value of the Slave Exception Error Count counter.
+     * 
+     *  @returns {BigInt}
+     *    - The value.
+     */
+    this.getSlaveExceptionErrorCount = function() {
+        return cntrSlaveExError;
+    };
 
     /**
      *  Wait for the service to be closed.
@@ -348,7 +416,11 @@ function MBSlaveService(
                             state = WKSTATE_TRANSACTION_WAIT;
                             continue;
                         }
-    
+
+                        //  Increase the value of the Slave Message Count 
+                        //  counter.
+                        ++(cntrSlaveMessage);
+
                         //  Get the query PDU.
                         let queryPDU = new MBPDU(
                             query.getFunctionCode(), 
@@ -356,14 +428,37 @@ function MBSlaveService(
                         );
     
                         //  Handle the query.
-                        let answerPDU = serviceHost.handle(model, queryPDU);
-    
+                        let answerPDU = null;
+                        try {
+                            answerPDU = serviceHost.handle(model, queryPDU);
+                        } catch(error) {
+                            if (error instanceof MBFunctionProhibitedError) {
+                                //  No response.
+                                answerPDU = null;
+
+                                //  Increase the Slave Exception Error Count 
+                                //  counter.
+                                ++(cntrSlaveExError);
+                            } else {
+                                throw error;
+                            }
+                        }
+
                         //  Answer the transaction.
                         if (answerPDU === null) {
                             transaction.ignore();
+
+                            //  Increase the Slave No Response Count counter.
+                            ++(cntrSlaveNoResp);
                         } else {
+                            let answerFnCode = answerPDU.getFunctionCode();
+                            if ((answerFnCode & 0x80) != 0) {
+                                //  Increase the Slave Exception Error Count 
+                                //  counter.
+                                ++(cntrSlaveExError);
+                            }
                             transaction.answer(new MBTransportAnswer(
-                                answerPDU.getFunctionCode(), 
+                                answerFnCode, 
                                 answerPDU.getData()
                             ));
                         }

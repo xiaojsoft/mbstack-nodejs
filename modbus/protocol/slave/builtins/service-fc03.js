@@ -65,6 +65,8 @@ function MBSlaveProtocolReadHoldingRegisterService() {
      *        service. No redundant check would be performed when handles the 
      *        request (query).
      * 
+     *  @throws {MBFunctionProhibitedError}
+     *    - Function prohibited in broadcast message.
      *  @param {IMBDataModel} model
      *    - The data model.
      *  @param {MBPDU} pdu 

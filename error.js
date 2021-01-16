@@ -317,6 +317,19 @@ function MBDeviceError(message = "") {
     MBError.call(this, message);
 }
 
+/**
+ *  MB function prohibited error.
+ * 
+ *  @constructor
+ *  @extends {MBError}
+ *  @param {String} [message]
+ *      - The message.
+ */
+function MBFunctionProhibitedError(message = "") {
+    //  Let parent class initialize.
+    MBError.call(this, message);
+}
+
 //
 //  Inheritances.
 //
@@ -343,6 +356,7 @@ Util.inherits(MBInitiateError, MBError);
 Util.inherits(MBPeerError, MBError);
 Util.inherits(MBTimeoutError, MBError);
 Util.inherits(MBDeviceError, MBError);
+Util.inherits(MBFunctionProhibitedError, MBError);
 
 //  Export public APIs.
 module.exports = {
@@ -368,5 +382,6 @@ module.exports = {
     "MBInitiateError": MBInitiateError,
     "MBPeerError": MBPeerError,
     "MBTimeoutError": MBTimeoutError,
-    "MBDeviceError": MBDeviceError
+    "MBDeviceError": MBDeviceError,
+    "MBFunctionProhibitedError": MBFunctionProhibitedError
 };
