@@ -87,10 +87,14 @@ const IMBDataModel =
     MbMdModel.IMBDataModel;
 const IMBMasterServiceInitiator = 
     MbSrMaster.IMBMasterServiceInitiator;
+const MBMasterServiceOption = 
+    MbSrMaster.MBMasterServiceOption;
 const MBMasterService = 
     MbSrMaster.MBMasterService;
 const IMBSlaveServiceInitiator = 
     MbSrSlave.IMBSlaveServiceInitiator;
+const MBSlaveServiceOption = 
+    MbSrSlave.MBSlaveServiceOption;
 const MBSlaveService = 
     MbSrSlave.MBSlaveService;
 const MBPDU = 
@@ -280,12 +284,16 @@ module.exports = {
         "Master": {
             "IMBMasterServiceInitiator": 
                 IMBMasterServiceInitiator,
+            "MBMasterServiceOption": 
+                MBMasterServiceOption,
             "MBMasterService": 
                 MBMasterService
         },
         "Slave": {
             "IMBSlaveServiceInitiator": 
                 IMBSlaveServiceInitiator,
+            "MBSlaveServiceOption": 
+                MBSlaveServiceOption,
             "MBSlaveService": 
                 MBSlaveService
         }

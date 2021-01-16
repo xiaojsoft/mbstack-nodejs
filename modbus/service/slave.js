@@ -37,6 +37,8 @@ const MBInvalidNodeError =
     MbError.MBInvalidNodeError;
 const MBInvalidOperationError = 
     MbError.MBInvalidOperationError;
+const MBParameterError = 
+    MbError.MBParameterError;
 const MBOperationCancelledError = 
     MbError.MBOperationCancelledError;
 const MBInitiateError = 
@@ -55,8 +57,61 @@ const CreatePreemptivePromise =
     XRTLibAsync.Asynchronize.Preempt.CreatePreemptivePromise;
 
 //
+//  Constants.
+//
+
+//  Default worker settings.
+const DFLT_WORKER_COUNT = 1;
+
+//
 //  Classes.
 //
+
+/**
+ *  Modbus slave service options.
+ * 
+ *  @constructor
+ */
+function MBSlaveServiceOption() {
+    //
+    //  Members.
+    //
+
+    //  Worker count.
+    let nWorkers = DFLT_WORKER_COUNT;
+
+    //
+    //  Public methods.
+    //
+
+    /**
+     *  Set the worker count.
+     * 
+     *  Note(s):
+     *    [1] The worker count must be a positive integer.
+     * 
+     *  @throws {MBParameterError}
+     *    - Invalid worker count.
+     *  @param {Number} wkn
+     *    - The new worker count.
+     */
+    this.setWorkerCount = function(wkn) {
+        if (!(Number.isInteger(wkn) && wkn >= 1)) {
+            throw new MBParameterError("Invalid worker count.");
+        }
+        nWorkers = wkn;
+    };
+
+    /**
+     *  Get the worker count.
+     * 
+     *  @returns {Number}
+     *    - The worker count.
+     */
+    this.getWorkerCount = function() {
+        return nWorkers;
+    };
+}
 
 /**
  *  Modbus slave service.
@@ -68,8 +123,15 @@ const CreatePreemptivePromise =
  *    - The protocol layer.
  *  @param {IMBSlaveTransport} layerTransport 
  *    - The transport layer.
+ *  @param {MBSlaveServiceOption} [options]
+ *    - The service options.
  */
-function MBSlaveService(model, layerProtocol, layerTransport) {
+function MBSlaveService(
+    model, 
+    layerProtocol, 
+    layerTransport,
+    options = new MBSlaveServiceOption()
+) {
     //
     //  Members.
     //
@@ -82,6 +144,9 @@ function MBSlaveService(model, layerProtocol, layerTransport) {
     let syncCmdTerminate = new ConditionalSynchronizer();
     let syncClosed = new ConditionalSynchronizer();
     
+    //  Worker count.
+    let nWorkers = options.getWorkerCount();
+
     //
     //  Public methods.
     //
@@ -147,107 +212,226 @@ function MBSlaveService(model, layerProtocol, layerTransport) {
     //  Coroutine(s).
     //
 
+    //  Worker coroutines.
+    let syncWorkerExits = [];
+    for (let workerId = 0; workerId < nWorkers; ++workerId) {
+        let syncWorkerExited = new ConditionalSynchronizer();
+        (function(_workerId) {
+            (async function() {
+                while (true) {
+                    //  Poll for a transaction.
+                    /**
+                     *  @type {?IMBSlaveTransaction}
+                     */
+                    let transaction = null;
+                    {
+                        //  Wait for signals.
+                        let cts = new ConditionalSynchronizer();
+                        let wh1 = layerTransport.poll(cts);
+                        let wh2 = syncCmdClose.waitWithCancellator(cts);
+                        let wh3 = syncCmdTerminate.waitWithCancellator(cts);
+                        let rsv = null;
+                        try {
+                            rsv = await CreatePreemptivePromise([
+                                wh1, 
+                                wh2, 
+                                wh3
+                            ]);
+                        } catch(error) {
+                            if (error instanceof PreemptReject) {
+                                error = error.getReason();
+                            }
+                            if (error instanceof MBInvalidOperationError) {
+                                break;
+                            }
+                            throw error;
+                        } finally {
+                            cts.fullfill();
+                        }
+
+                        //  Handle the signal.
+                        let wh = rsv.getPromiseObject();
+                        if (wh == wh1) {
+                            transaction = rsv.getValue();
+                        } else {
+                            //  Wait for wait handler 1 to be settled.
+                            try {
+                                transaction = await wh1;
+                                transaction.ignore();
+                                await transaction.wait();
+                            } catch(error) {
+                                //  Operation cancelled. Do nothing.
+                            }
+
+                            //  Handle other signals.
+                            if (wh == wh2 || wh == wh3) {
+                                break;
+                            } else {
+                                ReportBug(
+                                    "Invalid wait handler.", 
+                                    true, 
+                                    MBBugError
+                                );
+                            }
+                        }
+                    }
+
+                    //  Get the query.
+                    let query = transaction.getQuery();
+
+                    //  Get and select the unit ID.
+                    let queryUnitID = query.getUnitID();
+                    try {
+                        model.select(queryUnitID);
+                    } catch(error) {
+                        //  Skip this transaction if select node is not accepted
+                        //  by the data model.
+                        transaction.ignore();
+                        if (!(error instanceof MBInvalidNodeError)) {
+                            ReportBug(
+                                "Not a MBInvalidNodeError exception.", 
+                                false, 
+                                MBBugError
+                            );
+                        }
+                        continue;
+                    }
+
+                    //  Get the query PDU.
+                    let queryPDU = new MBPDU(
+                        query.getFunctionCode(), 
+                        query.getData()
+                    );
+
+                    //  Handle the query.
+                    let answerPDU = serviceHost.handle(model, queryPDU);
+
+                    //  Answer the transaction.
+                    if (answerPDU === null) {
+                        transaction.ignore();
+                    } else {
+                        transaction.answer(new MBTransportAnswer(
+                            answerPDU.getFunctionCode(), 
+                            answerPDU.getData()
+                        ));
+                    }
+
+                    //  Wait for the transaction to be settled.
+                    {
+                        //  Wait for signals.
+                        let cts = new ConditionalSynchronizer();
+                        let wh1 = transaction.wait(cts);
+                        let wh2 = syncCmdClose.waitWithCancellator(cts);
+                        let wh3 = syncCmdTerminate.waitWithCancellator(cts);
+                        let rsv = await CreatePreemptivePromise([
+                            wh1, 
+                            wh2, 
+                            wh3
+                        ]);
+                        cts.fullfill();
+
+                        //  Handle the signal.
+                        let wh = rsv.getPromiseObject();
+                        if (wh == wh1) {
+                            //  Do nothing.
+                        } else if (wh == wh2 || wh == wh3) {
+                            break;
+                        } else {
+                            ReportBug(
+                                "Invalid wait handler.", 
+                                true, 
+                                MBBugError
+                            );
+                        }
+                    }
+                }
+            })().catch(function(error) {
+                ReportBug(Util.format(
+                    "Worker %d coroutine throw an exception (error=\"%s\").",
+                    _workerId,
+                    error.message || "Unknown error."
+                ), false, MBBugError);
+            }).finally(function() {
+                syncWorkerExited.fullfill();
+            });
+        })(workerId);
+        syncWorkerExits.push(syncWorkerExited);
+    }
+
     //  Main coroutine.
     (async function() {
-        while (true) {
-            //  Poll for a transaction.
-            /**
-             *  @type {?IMBSlaveTransaction}
-             */
-            let transaction = null;
-            {
+        const CRTSTATE_WAIT = 0;
+        const CRTSTATE_CLOSING = 1;
+        const CRTSTATE_CLOSED = 2;
+
+        //  Run the state machine.
+        let state = CRTSTATE_WAIT;
+        while(true) {
+            if (state == CRTSTATE_WAIT) {
+                //  Wait for signals.
                 let cts = new ConditionalSynchronizer();
-                let wh1 = layerTransport.poll(cts);
-                let wh2 = syncCmdClose.waitWithCancellator(cts);
-                let wh3 = syncCmdTerminate.waitWithCancellator(cts);
-                let rsv = null;
-                try {
-                    rsv = await CreatePreemptivePromise([wh1, wh2, wh3]);
-                } catch(error) {
-                    if (error instanceof PreemptReject) {
-                        error = error.getReason();
-                    }
-                    if (error instanceof MBInvalidOperationError) {
-                        break;
-                    }
-                    throw error;
-                }
+                let wh1 = syncCmdClose.waitWithCancellator(cts);
+                let wh2 = syncCmdTerminate.waitWithCancellator(cts);
+                let rsv = await CreatePreemptivePromise([wh1, wh2]);
                 cts.fullfill();
+
+                //  Handle the signal.
                 let wh = rsv.getPromiseObject();
                 if (wh == wh1) {
-                    transaction = rsv.getValue();
-                } else if (wh == wh2) {
+                    //  Close the transport.
                     if (!layerTransport.isClosed()) {
                         layerTransport.close(false);
                     }
-                    break;
-                } else if (wh == wh3) {
+
+                    //  Go to CLOSING state.
+                    state = CRTSTATE_CLOSING;
+                } else if (wh == wh2) {
+                    //  Close the transport (forcibly).
                     if (!layerTransport.isClosed()) {
                         layerTransport.close(true);
                         await layerTransport.wait();
                     }
-                    return;
+
+                    //  Go to CLOSED state.
+                    state = CRTSTATE_CLOSED;
                 } else {
                     ReportBug("Invalid wait handler.", true, MBBugError);
                 }
-            }
+            } else if (state == CRTSTATE_CLOSING) {
+                //  Wait for signals.
+                let cts = new ConditionalSynchronizer();
+                let wh1 = layerTransport.wait(cts);
+                let wh2 = syncCmdTerminate.waitWithCancellator(cts);
+                let rsv = await CreatePreemptivePromise([wh1, wh2]);
+                cts.fullfill();
 
-            //  Get the query.
-            let query = transaction.getQuery();
+                //  Handle the signal.
+                let wh = rsv.getPromiseObject();
+                if (wh == wh1) {
+                    //  Go to CLOSED state.
+                    state = CRTSTATE_CLOSED;
+                } else if (wh == wh2) {
+                    //  Close the transport (forcibly).
+                    if (!layerTransport.isClosed()) {
+                        layerTransport.close(true);
+                        await layerTransport.wait();
+                    }
 
-            //  Get and select the unit ID.
-            let queryUnitID = query.getUnitID();
-            try {
-                model.select(queryUnitID);
-            } catch(error) {
-                //  Skip this transaction if select node is not accepted by the 
-                //  data model.
-                transaction.ignore();
-                if (!(error instanceof MBInvalidNodeError)) {
-                    ReportBug(
-                        "Not a MBInvalidNodeError exception.", 
-                        false, 
-                        MBBugError
-                    );
+                    //  Go to CLOSED state.
+                    state = CRTSTATE_CLOSED;
+                } else {
+                    ReportBug("Invalid wait handler.", true, MBBugError);
                 }
-                continue;
+            } else if (state == CRTSTATE_CLOSED) {
+                break;
+            } else {
+                ReportBug("Invalid state.", true, MBBugError);
             }
-
-            //  Get the query PDU.
-            let queryPDU = new MBPDU(query.getFunctionCode(), query.getData());
-
-            //  Handle the query.
-            let answerPDU = serviceHost.handle(model, queryPDU);
-            if (answerPDU === null) {
-                transaction.ignore();
-                continue;
-            }
-
-            //  Answer the transaction (currently no need to wait for the 
-            //  transaction).
-            transaction.answer(new MBTransportAnswer(
-                answerPDU.getFunctionCode(), 
-                answerPDU.getData()
-            ));
         }
 
-        {
-            let cts = new ConditionalSynchronizer();
-            let wh1 = layerTransport.wait(cts);
-            let wh2 = syncCmdTerminate.waitWithCancellator(cts);
-            let rsv = await CreatePreemptivePromise([wh1, wh2]);
-            cts.fullfill();
-            let wh = rsv.getPromiseObject();
-            if (wh == wh1) {
-                //  Do nothing.
-            } else if (wh == wh2) {
-                if (!layerTransport.isClosed()) {
-                    layerTransport.close(true);
-                    await layerTransport.wait();
-                }
-            } else {
-                ReportBug("Invalid wait handler.", true, MBBugError);
-            }
+        //  Wait for worker coroutines to be exited.
+        for (let i = 0; i < syncWorkerExits.length; ++i) {
+            await syncWorkerExits[i].wait();
         }
     })().catch(function(error) {
         ReportBug(Util.format(
@@ -394,6 +578,7 @@ function IMBSlaveServiceInitiator() {
 
 //  Export public APIs.
 module.exports = {
+    "MBSlaveServiceOption": MBSlaveServiceOption,
     "MBSlaveService": MBSlaveService,
     "IMBSlaveServiceInitiator": IMBSlaveServiceInitiator
 };

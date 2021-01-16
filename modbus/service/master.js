@@ -60,13 +60,25 @@ const CreateTimeoutPromiseEx =
 //
 
 /**
+ *  Modbus master service options.
+ * 
+ *  @constructor
+ */
+function MBMasterServiceOption() {
+    //  Nothing.
+}
+
+/**
  *  Modbus master service.
  * 
  *  @constructor
  *  @param {IMBMasterTransport} layerTransport 
  *    - The transport layer.
  */
-function MBMasterService(layerTransport) {
+function MBMasterService(
+    layerTransport, 
+    options = new MBMasterServiceOption()
+) {
     //
     //  Members.
     //
@@ -373,6 +385,7 @@ function IMBMasterServiceInitiator() {
 
 //  Export public APIs.
 module.exports = {
+    "MBMasterServiceOption": MBMasterServiceOption,
     "MBMasterService": MBMasterService,
     "IMBMasterServiceInitiator": IMBMasterServiceInitiator
 };
