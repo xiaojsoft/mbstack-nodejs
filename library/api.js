@@ -79,6 +79,10 @@ const MbTspSlDriverRegistry =
     require("./../modbus/transport/serial/driver/sl-driverregistry");
 const MbTspSlDriverGeneric = 
     require("./../modbus/transport/serial/driver/generic/sl-drivergeneric");
+const MbConventions = 
+    require("./../modbus/conventions");
+const MbCounters = 
+    require("./../modbus/counters");
 const MbError = 
     require("./../error");
 
@@ -278,6 +282,46 @@ const MBSL_STOPBIT_2 =
 
 //  Export public APIs.
 module.exports = {
+    "Conventions": {
+        "MAX_PDU_DATA_LENGTH": 
+            MbConventions.MAX_PDU_DATA_LENGTH,
+        "MAX_PDU_LENGTH": 
+            MbConventions.MAX_PDU_LENGTH
+    },
+    "Counters": {
+        "CNTRNO_BUSMESSAGE": 
+            MbCounters.CNTRNO_BUSMESSAGE,
+        "CNTRNO_BUSCOMERROR": 
+            MbCounters.CNTRNO_BUSCOMERROR,
+        "CNTRNO_SLVEXCERROR": 
+            MbCounters.CNTRNO_SLVEXCERROR,
+        "CNTRNO_SLVMESSAGE": 
+            MbCounters.CNTRNO_SLVMESSAGE,
+        "CNTRNO_SLVNORESP": 
+            MbCounters.CNTRNO_SLVNORESP,
+        "CNTRNO_SLVNAK": 
+            MbCounters.CNTRNO_SLVNAK,
+        "CNTRNO_SLVBUSY": 
+            MbCounters.CNTRNO_SLVBUSY,
+        "CNTRNO_BUSCHROVR": 
+            MbCounters.CNTRNO_BUSCHROVR,
+        "CNTRSUBFN_BUSMESSAGE": 
+            MbCounters.CNTRSUBFN_BUSMESSAGE,
+        "CNTRSUBFN_BUSCOMERROR": 
+            MbCounters.CNTRSUBFN_BUSCOMERROR,
+        "CNTRSUBFN_SLVEXCERROR": 
+            MbCounters.CNTRSUBFN_SLVEXCERROR,
+        "CNTRSUBFN_SLVMESSAGE": 
+            MbCounters.CNTRSUBFN_SLVMESSAGE,
+        "CNTRSUBFN_SLVNORESP": 
+            MbCounters.CNTRSUBFN_SLVNORESP,
+        "CNTRSUBFN_SLVNAK": 
+            MbCounters.CNTRSUBFN_SLVNAK,
+        "CNTRSUBFN_SLVBUSY": 
+            MbCounters.CNTRSUBFN_SLVBUSY,
+        "CNTRSUBFN_BUSCHROVR": 
+            MbCounters.CNTRSUBFN_BUSCHROVR
+    },
     "Model": {
         "IMBDataModel": 
             IMBDataModel
