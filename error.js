@@ -97,6 +97,19 @@ function MBOperationCancelledError(message = "") {
 }
 
 /**
+ *  MB overflow error.
+ * 
+ *  @constructor
+ *  @extends {MBError}
+ *  @param {String} [message]
+ *      - The message.
+ */
+function MBOverflowError(message = "") {
+    //  Let parent class initialize.
+    MBError.call(this, message);
+}
+
+/**
  *  MB configuration error.
  * 
  *  @constructor
@@ -313,6 +326,7 @@ Util.inherits(MBTypeError, MBError);
 Util.inherits(MBParameterError, MBError);
 Util.inherits(MBInvalidOperationError, MBError);
 Util.inherits(MBOperationCancelledError, MBError);
+Util.inherits(MBOverflowError, MBError);
 Util.inherits(MBConfigurationError, MBError);
 Util.inherits(MBParseError, MBError);
 Util.inherits(MBCommunicationError, MBError);
@@ -338,6 +352,7 @@ module.exports = {
     "MBParameterError": MBParameterError,
     "MBInvalidOperationError": MBInvalidOperationError,
     "MBOperationCancelledError": MBOperationCancelledError,
+    "MBOverflowError": MBOverflowError,
     "MBConfigurationError": MBConfigurationError,
     "MBParseError": MBParseError,
     "MBCommunicationError": MBCommunicationError,

@@ -17,6 +17,7 @@ Type
 Parameter
 InvalidOperation
 OperationCancelled
+Overflow
 Configuration
 Parse
 Communication
