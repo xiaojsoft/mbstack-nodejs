@@ -59,6 +59,16 @@ function IMBSlaveProtocolService() {
     };
 
     /**
+     *  Get whether the service is available in listen-only mode.
+     * 
+     *  @returns {Boolean}
+     *    - True if so.
+     */
+    this.isAvailableInListenOnlyMode = function() {
+        throw new Error("Not implemented.");
+    };
+
+    /**
      *  Handle request (query).
      * 
      *  Note(s):
@@ -138,27 +148,43 @@ function MBSlaveProtocolServiceHost() {
     /**
      *  Handle request (query).
      * 
+     *  @throws {MBFunctionProhibitedError}
+     *    - Function prohibited in broadcast message.
      *  @param {IMBDataModel} model
      *    - The data model.
      *  @param {MBPDU} pdu 
      *    - The request (query) protocol data unit (PDU).
-     *  @throws {MBFunctionProhibitedError}
-     *    - Function prohibited in broadcast message.
+     *  @param {Boolean} [listenOnly]
+     *    - True if the query is currently being handled in listen-only mode.
      *  @returns {?MBPDU}
      *    - The response (answer) protocol data unit (PDU).
      *    - NULL if no response is needed.
      */
-    this.handle = function(model, pdu) {
+    this.handle = function(model, pdu, listenOnly = false) {
         //  Get the request (query) function code.
         let fnCode = pdu.getFunctionCode();
 
         //  Check the request (query) function code.
         if (!services.has(fnCode)) {
+            if (listenOnly) {
+                //  Do NOT return any exception message under listen-only mode.
+                return null;
+            }
             return MBPDU.NewException(fnCode, MBEX_ILLEGAL_FUNCTION);
         }
 
+        //  Get the service.
+        let service = services.get(fnCode);
+
+        //  Check the function availability in listen-only mode.
+        if (listenOnly) {
+            if (!service.isAvailableInListenOnlyMode()) {
+                return null;
+            }
+        }
+
         //  Let the service handle the PDU.
-        return services.get(fnCode).handle(model, pdu);
+        return service.handle(model, pdu);
     };
 }
 

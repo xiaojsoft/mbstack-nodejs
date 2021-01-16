@@ -61,6 +61,16 @@ function MBSlaveProtocolReadInputRegisterService() {
     };
 
     /**
+     *  Get whether the service is available in listen-only mode.
+     * 
+     *  @returns {Boolean}
+     *    - True if so.
+     */
+    this.isAvailableInListenOnlyMode = function() {
+        return false;
+    };
+
+    /**
      *  Handle request (query).
      * 
      *  Note(s):

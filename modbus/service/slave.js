@@ -175,6 +175,9 @@ function MBSlaveService(
     //  Worker count.
     let nWorkers = options.getWorkerCount();
 
+    //  Listen-only mode switch.
+    let swListenOnly = false;
+
     //
     //  Public methods.
     //
@@ -321,6 +324,26 @@ function MBSlaveService(
         self.getAvailableCounters().forEach(function(cntrid) {
             self.resetCounterValue(cntrid);
         });
+    };
+
+    /**
+     *  Get the value of the listen-only mode switch.
+     * 
+     *  @returns {Boolean}
+     *    - True if the listen-only mode switch is on.
+     */
+    this.getListenOnlySwitch = function() {
+        return swListenOnly;
+    };
+
+    /**
+     *  Set the value of the listen-only mode switch.
+     * 
+     *  @param {Boolean} en
+     *    - True if the listen-only mode switch should be turned on.
+     */
+    this.setListenOnlySwitch = function(en) {
+        swListenOnly = en;
     };
 
     /**
@@ -534,7 +557,11 @@ function MBSlaveService(
                         //  Handle the query.
                         let answerPDU = null;
                         try {
-                            answerPDU = serviceHost.handle(model, queryPDU);
+                            answerPDU = serviceHost.handle(
+                                model, 
+                                queryPDU, 
+                                swListenOnly
+                            );
                         } catch(error) {
                             if (error instanceof MBFunctionProhibitedError) {
                                 //  No response.
