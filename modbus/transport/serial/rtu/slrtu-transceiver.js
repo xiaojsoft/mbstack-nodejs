@@ -187,9 +187,6 @@ function MBRtuTransceiver(
         hct = MIN_HCT;
     }
     hct *= options.getCharTimeScale();
-    
-
-
 
     //  Flags.
     let flags = new EventFlags(0x00);
@@ -203,12 +200,19 @@ function MBRtuTransceiver(
      */
     let txRawFrame = null;
 
+    //  Counters.
+    let cntrBusMsg = 0n;
+    let cntrBusCommError = 0n;
+    let cntrBusCharOvrRun = 0n;
 
     //  Signals.
     let syncCmdClose = new ConditionalSynchronizer();
     let syncCmdTerminate = new ConditionalSynchronizer();
     let syncClosed = new ConditionalSynchronizer();
 
+    //
+    //  Private methods.
+    //
 
     /**
      *  Handle raw frame.
@@ -219,7 +223,8 @@ function MBRtuTransceiver(
     function _HandleFrame(raw) {
         //  Drop the raw frame if it is too short.
         if (raw.length < 4) {
-            //  TODO(akita): Increase the frame corruption counter.
+            //  Increase the 'Bus Communication Error' counter.
+            ++(cntrBusCommError);
             return;
         }
 
@@ -228,11 +233,15 @@ function MBRtuTransceiver(
             let hasher = new MBCRC16();
             hasher.update(raw);
             if (hasher.digest() != 0x0000) {
-                //  TODO(akita): Increase the CRC checksum error counter.
+                //  Increase the 'Bus Communication Error' counter.
+                ++(cntrBusCommError);
                 return;
             }
         }
-        
+
+        //  Increase the 'Bus Message Count' counter.
+        ++(cntrBusMsg);
+
         //  Build the frame.
         let frame = new MBRtuFrame(
             raw.readUInt8(0),
@@ -247,6 +256,69 @@ function MBRtuTransceiver(
     //
     //  Public methods.
     //
+
+    /**
+     *  Reset the bus message counter.
+     */
+    this.resetBusMessageCount = function() {
+        cntrBusMsg = 0n;
+    };
+
+    /**
+     *  Get the value of the bus message counter.
+     * 
+     *  Note(s):
+     *    [1] The bus message counter saves the quantity of good messages that 
+     *        has been received.
+     * 
+     *  @returns {BigInt}
+     *    - The value.
+     */
+    this.getBusMessageCount = function() {
+        return cntrBusMsg;
+    };
+
+    /**
+     *  Reset the bus communication error counter.
+     */
+    this.resetBusErrorCount = function() {
+        cntrBusCommError = 0n;
+    };
+
+    /**
+     *  Get the value of the bus communication error counter.
+     * 
+     *  Note(s):
+     *    [1] The bus communication error counter saves the quantity of 
+     *        corrupted messages that has been received.
+     * 
+     *  @returns {BigInt}
+     *    - The value.
+     */
+    this.getBusErrorCount = function() {
+        return cntrBusCommError;
+    };
+
+    /**
+     *  Reset the bus character overrun error counter.
+     */
+    this.resetBusOverrunCount = function() {
+        cntrBusCharOvrRun = 0n;
+    };
+
+    /**
+     *  Get the value of the bus character overrun counter.
+     * 
+     *  Note(s):
+     *    [1] The bus character overrun counter saves the quantity of messages 
+     *        that could not be handled due to a character overrun condition.
+     * 
+     *  @returns {BigInt}
+     *    - The value.
+     */
+    this.getBusOverrunCount = function() {
+        return cntrBusCharOvrRun;
+    };
 
     /**
      *  Get whether the frame receiving was ended (no more frame can be 
@@ -439,6 +511,7 @@ function MBRtuTransceiver(
         let rxBuffer = Buffer.allocUnsafe(RXBUFSIZE);
         let rxBufferWriteOffset = 0;
         let rxNOK = false;
+        let rxOvrrun = false;
 
         /**
          *  Reset the RX buffer.
@@ -446,6 +519,7 @@ function MBRtuTransceiver(
         function _RxBuf_Reset() {
             rxBufferWriteOffset = 0;
             rxNOK = false;
+            rxOvrrun = false;
         }
 
         /**
@@ -456,6 +530,7 @@ function MBRtuTransceiver(
             if (port.rxIsCharacterValid()) {
                 if (rxBufferWriteOffset >= rxBuffer.length) {
                     rxNOK = true;
+                    rxOvrrun = true;
                 } else {
                     rxBuffer.writeUInt8(datum, rxBufferWriteOffset);
                     ++(rxBufferWriteOffset);
@@ -465,6 +540,7 @@ function MBRtuTransceiver(
             }
             if (port.rxIsBufferOverrun()) {
                 rxNOK = true;
+                rxOvrrun = true;
                 port.rxResetBufferOverrun();
             }
         }
@@ -797,6 +873,14 @@ function MBRtuTransceiver(
                     //  Handle the frame.
                     if (!rxNOK) {
                         _HandleFrame(rxBuffer.slice(0, rxBufferWriteOffset));
+                    } else {
+                        if (rxOvrrun) {
+                            //  Increase the 'Bus Character Overrun' counter.
+                            ++(cntrBusCharOvrRun);
+                        }
+
+                        //  Increase the 'Bus Communication Error' counter.
+                        ++(cntrBusCommError);
                     }
 
                     //  Go to IDLE state.
