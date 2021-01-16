@@ -109,6 +109,40 @@ function MBExampleDataModel() {
     //
 
     /**
+     *  Acquire the transaction lock.
+     * 
+     *  Note(s):
+     *    [1] (To implementer) This method would be invoked before any 
+     *        transaction started. If the data model needs no lock mechanism 
+     *        that guarantees only one transaction can have access to the data 
+     *        model at anytime, just keep this method empty.
+     * 
+     *  @throws {MBOperationCancelledError}
+     *    - The cancellator was activated.
+     *  @param {ConditionalSynchronizer} [cancellator]
+     *    - The cancellator.
+     *  @returns {Promise<void>}
+     *    - The promise object (resolves if succeed, rejects if error occurred).
+     */
+    this.transactionLock = async function(
+        cancellator = new ConditionalSynchronizer()
+    ) {
+        //  Do nothing.
+    };
+
+    /**
+     *  Release the transaction lock.
+     * 
+     *  Note(s):
+     *    [1] (To implementer) This method would be invoked after when current 
+     *        transaction completed. If the data model needs no lock mechanism, 
+     *        just keep this method empty.
+     */
+    this.transactionUnlock = function() {
+        //  Do nothing.
+    };
+
+    /**
      *  Select an unit (slave) identifier.
      * 
      *  Note(s):

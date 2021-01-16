@@ -522,7 +522,7 @@ function MBSlaveService(
                     } else if (state == WKSTATE_TRANSACTION_HANDLE) {
                         //  Get the query.
                         let query = transaction.getQuery();
-    
+
                         //  Get and select the unit ID.
                         let queryUnitID = query.getUnitID();
                         try {
@@ -553,7 +553,48 @@ function MBSlaveService(
                             query.getFunctionCode(), 
                             query.getData()
                         );
-    
+
+                        //  Acquire the transaction lock.
+                        {
+                            //  Wait for signals.
+                            let cts = new ConditionalSynchronizer();
+                            let wh1 = model.transactionLock(cts);
+                            let wh2 = syncCmdClose.waitWithCancellator(cts);
+                            let wh3 = syncCmdTerminate.waitWithCancellator(cts);
+                            let rsv = await CreatePreemptivePromise([
+                                wh1, 
+                                wh2, 
+                                wh3
+                            ]);
+                            cts.fullfill();
+
+                            //  Handle the signal.
+                            let wh = rsv.getPromiseObject();
+                            if (wh == wh1) {
+                                //  Do nothing.
+                            } else {
+                                //  Wait for wait handler 1 to be settled.
+                                try {
+                                    await wh1;
+                                    model.transactionUnlock();
+                                } catch(error) {
+                                    //  Operation cancelled. Do nothing.
+                                }
+
+                                if (wh == wh2 || wh == wh3) {
+                                    //  Go to FINALIZE state.
+                                    state = WKSTATE_FINALIZE;
+                                    continue;
+                                } else {
+                                    ReportBug(
+                                        "Invalid wait handler.", 
+                                        true, 
+                                        MBBugError
+                                    );
+                                }
+                            }
+                        }
+
                         //  Handle the query.
                         let answerPDU = null;
                         try {
@@ -573,6 +614,9 @@ function MBSlaveService(
                             } else {
                                 throw error;
                             }
+                        } finally {
+                            //  Release the transaction lock.
+                            model.transactionUnlock();
                         }
 
                         //  Answer the transaction.

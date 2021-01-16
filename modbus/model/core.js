@@ -9,16 +9,22 @@
 //
 
 //  Imported modules.
+const XRTLibAsync = 
+    require("xrtlibrary-async");
 const MbError = 
     require("./../../error");
 
 //  Imported classes.
+const ConditionalSynchronizer = 
+    XRTLibAsync.Synchronize.Conditional.ConditionalSynchronizer;
 const MBInvalidNodeError = 
     MbError.MBInvalidNodeError;
 const MBInvalidDataAddressError = 
     MbError.MBInvalidDataAddressError;
 const MBInvalidDataValueError = 
     MbError.MBInvalidDataValueError;
+const MBOperationCancelledError = 
+    MbError.MBOperationCancelledError;
 
 //
 //  Classes.
@@ -33,6 +39,40 @@ function IMBDataModel() {
     //
     //  Public methods.
     //
+
+    /**
+     *  Acquire the transaction lock.
+     * 
+     *  Note(s):
+     *    [1] (To implementer) This method would be invoked before any 
+     *        transaction started. If the data model needs no lock mechanism 
+     *        that guarantees only one transaction can have access to the data 
+     *        model at anytime, just keep this method empty.
+     * 
+     *  @throws {MBOperationCancelledError}
+     *    - The cancellator was activated.
+     *  @param {ConditionalSynchronizer} [cancellator]
+     *    - The cancellator.
+     *  @returns {Promise<void>}
+     *    - The promise object (resolves if succeed, rejects if error occurred).
+     */
+    this.transactionLock = async function(
+        cancellator = new ConditionalSynchronizer()
+    ) {
+        throw new Error("Not implemented.");
+    };
+
+    /**
+     *  Release the transaction lock.
+     * 
+     *  Note(s):
+     *    [1] (To implementer) This method would be invoked after when current 
+     *        transaction completed. If the data model needs no lock mechanism, 
+     *        just keep this method empty.
+     */
+    this.transactionUnlock = function() {
+        throw new Error("Not implemented.");
+    };
 
     /**
      *  Select an unit (slave) identifier.
