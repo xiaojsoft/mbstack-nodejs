@@ -9,13 +9,16 @@
 //
 
 //  Imported modules.
-const MbPrMasterParser = require("./parser");
-const MbPrCore = require("./../core");
-const MbError = require("./../../../error");
+const MbPrMasterParser = 
+    require("./parser");
+const MbPrCore = 
+    require("./../core");
 
 //  Imported classes.
-const IMBMasterProtocolParser = MbPrMasterParser.IMBMasterProtocolParser;
-const MBPDU = MbPrCore.MBPDU;
+const IMBMasterProtocolParser = 
+    MbPrMasterParser.IMBMasterProtocolParser;
+const MBPDU = 
+    MbPrCore.MBPDU;
 
 //
 //  Classes.

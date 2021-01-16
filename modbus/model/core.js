@@ -9,7 +9,8 @@
 //
 
 //  Imported modules.
-const MbError = require("./../../error");
+const MbError = 
+    require("./../../error");
 
 //  Imported classes.
 const MBInvalidNodeError = 

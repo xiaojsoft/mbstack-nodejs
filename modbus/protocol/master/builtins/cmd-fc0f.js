@@ -9,10 +9,14 @@
 //
 
 //  Imported modules.
-const MbPrMasterBuiltinsParserFC0F = require("./parser-fc0f");
-const MbPrMasterCmd = require("./../cmd");
-const MbPrCore = require("./../../core");
-const MbError = require("./../../../../error");
+const MbPrMasterBuiltinsParserFC0F = 
+    require("./parser-fc0f");
+const MbPrMasterCmd = 
+    require("./../cmd");
+const MbPrCore = 
+    require("./../../core");
+const MbError = 
+    require("./../../../../error");
 
 //  Imported classes.
 const MBParameterError = 

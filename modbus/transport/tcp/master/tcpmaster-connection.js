@@ -9,8 +9,10 @@
 //
 
 //  Imported modules.
-const MbTspTcpTransaction = require("./../tcp-transaction");
-const MbTspTcpTransceiver = require("./../tcp-transceiver");
+const MbTspTcpTransaction = 
+    require("./../tcp-transaction");
+const MbTspTcpTransceiver = 
+    require("./../tcp-transceiver");
 
 //  Imported classes.
 const MBTCPTransceiver = 

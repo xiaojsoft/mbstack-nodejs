@@ -9,10 +9,14 @@
 //
 
 //  Imported modules.
-const MbTspTcpConstants = require("./tcp-constants");
-const MbConventions = require("./../../conventions");
-const MbError = require("./../../../error");
-const Util = require("util");
+const MbTspTcpConstants = 
+    require("./tcp-constants");
+const MbConventions = 
+    require("./../../conventions");
+const MbError = 
+    require("./../../../error");
+const Util = 
+    require("util");
 
 //  Imported classes.
 const MBParameterError = MbError.MBParameterError;

@@ -9,10 +9,14 @@
 //
 
 //  Imported modules.
-const MbPrSlaveService = require("./../service");
-const MbPrCore = require("./../../core");
-const MbPrExceptions = require("./../../exceptions");
-const Util = require("util");
+const MbPrSlaveService = 
+    require("./../service");
+const MbPrCore = 
+    require("./../../core");
+const MbPrExceptions = 
+    require("./../../exceptions");
+const Util = 
+    require("util");
 
 //  Imported classes.
 const IMBSlaveProtocolService = 

@@ -9,20 +9,30 @@
 //
 
 //  Imported modules.
-const MbPrCore = require("./../core");
-const MbPrExceptions = require("./../exceptions");
-const MbMdCore = require("./../../model/core");
-const MbError = require("./../../../error");
+const MbPrCore = 
+    require("./../core");
+const MbPrExceptions = 
+    require("./../exceptions");
+const MbMdCore = 
+    require("./../../model/core");
+const MbError = 
+    require("./../../../error");
 
 //  Imported classes.
-const MBPDU = MbPrCore.MBPDU;
-const IMBDataModel = MbMdCore.IMBDataModel;
-const MBProtocolServiceExistedError = MbError.MBProtocolServiceExistedError;
-const MBProtocolServiceNotExistError = MbError.MBProtocolServiceNotExistError;
-const MBFunctionProhibitedError = MbError.MBFunctionProhibitedError;
+const MBPDU = 
+    MbPrCore.MBPDU;
+const IMBDataModel = 
+    MbMdCore.IMBDataModel;
+const MBProtocolServiceExistedError = 
+    MbError.MBProtocolServiceExistedError;
+const MBProtocolServiceNotExistError = 
+    MbError.MBProtocolServiceNotExistError;
+const MBFunctionProhibitedError = 
+    MbError.MBFunctionProhibitedError;
 
 //  Imported constants.
-const MBEX_ILLEGAL_FUNCTION = MbPrExceptions.MBEX_ILLEGAL_FUNCTION;
+const MBEX_ILLEGAL_FUNCTION = 
+    MbPrExceptions.MBEX_ILLEGAL_FUNCTION;
 
 //
 //  Classes.

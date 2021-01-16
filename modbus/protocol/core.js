@@ -9,15 +9,20 @@
 //
 
 //  Imported modules.
-const MbConventions = require("./../conventions");
-const MbError = require("./../../error");
-const Util = require("util");
+const MbConventions = 
+    require("./../conventions");
+const MbError = 
+    require("./../../error");
+const Util = 
+    require("util");
 
 //  Imported classes.
-const MBParameterError = MbError.MBParameterError;
+const MBParameterError = 
+    MbError.MBParameterError;
 
 //  Imported constants.
-const MAX_PDU_DATA_LENGTH = MbConventions.MAX_PDU_DATA_LENGTH;
+const MAX_PDU_DATA_LENGTH = 
+    MbConventions.MAX_PDU_DATA_LENGTH;
 
 //
 //  Classes.

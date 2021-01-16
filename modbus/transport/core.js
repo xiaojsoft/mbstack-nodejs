@@ -9,10 +9,14 @@
 //
 
 //  Imported modules.
-const MbConventions = require("./../conventions");
-const MbError = require("./../../error");
-const XRTLibAsync = require("xrtlibrary-async");
-const Util = require("util");
+const MbConventions = 
+    require("./../conventions");
+const MbError = 
+    require("./../../error");
+const XRTLibAsync = 
+    require("xrtlibrary-async");
+const Util = 
+    require("util");
 
 //  Imported classes.
 const MBParameterError = 

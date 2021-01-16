@@ -9,12 +9,16 @@
 //
 
 //  Imported modules.
-const MbPrCore = require("./../core");
-const MbError = require("./../../../error");
+const MbPrCore = 
+    require("./../core");
+const MbError = 
+    require("./../../../error");
 
 //  Imported classes.
-const MBParseError = MbError.MBParseError;
-const MBPDU = MbPrCore.MBPDU;
+const MBParseError = 
+    MbError.MBParseError;
+const MBPDU = 
+    MbPrCore.MBPDU;
 
 //
 //  Classes.

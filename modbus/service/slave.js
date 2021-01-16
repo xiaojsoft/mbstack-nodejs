@@ -9,15 +9,24 @@
 //
 
 //  Imported modules.
-const MbMdCore = require("./../model/core");
-const MbPrCore = require("./../protocol/core");
-const MbPrSlaveLayer = require("./../protocol/slave/layer");
-const MbTrCore = require("./../transport/core");
-const MbCounters = require("./../counters");
-const MbError = require("./../../error");
-const XRTLibAsync = require("xrtlibrary-async");
-const XRTLibBugHandler = require("xrtlibrary-bughandler");
-const Util = require("util");
+const MbMdCore = 
+    require("./../model/core");
+const MbPrCore = 
+    require("./../protocol/core");
+const MbPrSlaveLayer = 
+    require("./../protocol/slave/layer");
+const MbTrCore = 
+    require("./../transport/core");
+const MbCounters = 
+    require("./../counters");
+const MbError = 
+    require("./../../error");
+const XRTLibAsync = 
+    require("xrtlibrary-async");
+const XRTLibBugHandler = 
+    require("xrtlibrary-bughandler");
+const Util = 
+    require("util");
 
 //  Imported classes.
 const MBPDU = 

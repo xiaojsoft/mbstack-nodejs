@@ -9,9 +9,12 @@
 //
 
 //  Imported modules.
-const MbError = require("./../../../error");
-const XRTLibAsync = require("xrtlibrary-async");
-const XRTLibBugHandler = require("xrtlibrary-bughandler");
+const MbError = 
+    require("./../../../error");
+const XRTLibAsync = 
+    require("xrtlibrary-async");
+const XRTLibBugHandler = 
+    require("xrtlibrary-bughandler");
 
 //  Imported classes.
 const MBBugError = 

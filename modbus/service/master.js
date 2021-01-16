@@ -9,13 +9,20 @@
 //
 
 //  Imported modules.
-const MbPrCore = require("./../protocol/core");
-const MbPrMasterCmd = require("./../protocol/master/cmd");
-const MbTrCore = require("./../transport/core");
-const MbError = require("./../../error");
-const XRTLibAsync = require("xrtlibrary-async");
-const XRTLibBugHandler = require("xrtlibrary-bughandler");
-const Util = require("util");
+const MbPrCore = 
+    require("./../protocol/core");
+const MbPrMasterCmd = 
+    require("./../protocol/master/cmd");
+const MbTrCore = 
+    require("./../transport/core");
+const MbError = 
+    require("./../../error");
+const XRTLibAsync = 
+    require("xrtlibrary-async");
+const XRTLibBugHandler = 
+    require("xrtlibrary-bughandler");
+const Util = 
+    require("util");
 
 //  Imported classes.
 const MBTransportQuery = 

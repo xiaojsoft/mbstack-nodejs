@@ -9,9 +9,12 @@
 //
 
 //  Imported modules.
-const MBStack = require("./../..");
-const XRTLibAsync = require("xrtlibrary-async");
-const Util = require("util");
+const MBStack = 
+    require("./../..");
+const XRTLibAsync = 
+    require("xrtlibrary-async");
+const Util = 
+    require("util");
 
 //  Imported classes.
 const IMBMasterServiceInitiator = 

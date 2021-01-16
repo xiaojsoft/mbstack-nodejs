@@ -9,10 +9,12 @@
 //
 
 //  Imported modules.
-const MbPrSlaveService = require("./service");
+const MbPrSlaveService = 
+    require("./service");
 
 //  Imported classes.
-const MBSlaveProtocolServiceHost = MbPrSlaveService.MBSlaveProtocolServiceHost;
+const MBSlaveProtocolServiceHost = 
+    MbPrSlaveService.MBSlaveProtocolServiceHost;
 
 //
 //  Classes.
