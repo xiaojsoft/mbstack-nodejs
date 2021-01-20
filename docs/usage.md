@@ -2,7 +2,7 @@
 
 ### Introduction
 
-This usage guide gives you provision of this package. It is highly recommended to read the example codes under [example/](https://github.com/TaikiAkita/mbstack-nodejs/tree/master/examples) directory along with this guide.
+This usage guide gives you provision of this package. It is highly recommended to read the example codes along with this guide.
 
 ### High Level Structure
 
@@ -10,7 +10,7 @@ This usage guide gives you provision of this package. It is highly recommended t
 
 A Modbus system that uses this package implements a layered solution, as shown in following diagram:
 
-![System Architecture Diagram](https://raw.githubusercontent.com/TaikiAkita/mbstack-nodejs/master/docs/images/System_Architecture.png)
+![System Architecture Diagram](images/System_Architecture.png)
 
 The layers are:
  - <b>Application Layer</b>: The application layer implements higher logic that uses Modbus protocol as underlying communication mechanism.
@@ -27,7 +27,7 @@ All blocks with gray-line background are application-specific blocks that should
 
 Data model block implements generic coil/register operations (including read, write and validate) defined in the protocol specification. It is totally application-specific, so it is implementation is out of the scope of this package (with only interface class provided).
 
-A data model block should be implemented by creating a class that implements **[IMBDataModel](https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/model/core.js)** interface. A data model class implements following interfaces:
+A data model block should be implemented by creating a class that implements **[IMBDataModel](../modbus/model/core.js)** interface. A data model class implements following interfaces:
 
 <table>
 <thead>
@@ -136,7 +136,7 @@ For example, if a master wants to read coil 0x0000 to 0x0004 from slave 1, opera
 
 #### Protocol-layer service
 
-A protocol-layer service (which implements <b>[IMBSlaveProtocolService](https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/protocol/slave/service.js)</b> interface) translates query PDU with specific function code to data model access primitives and generates answer PDU that would be sent back to the master.
+A protocol-layer service (which implements <b>[IMBSlaveProtocolService](../modbus/protocol/slave/service.js)</b> interface) translates query PDU with specific function code to data model access primitives and generates answer PDU that would be sent back to the master.
 
 The protocol-layer service classes for following standardized function codes are provided along with this package:
 
@@ -150,49 +150,49 @@ The protocol-layer service classes for following standardized function codes are
 <tr>
 <td>0x01</td>
 <td>Read Coils</td>
-<td><a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/protocol/slave/builtins/service-fc01.js">MBSlaveProtocolReadCoilsService</a></td>
+<td><a href="../modbus/protocol/slave/builtins/service-fc01.js">MBSlaveProtocolReadCoilsService</a></td>
 </tr>
 <tr>
 <td>0x02</td>
 <td>Read Discrete Inputs</td>
-<td><a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/protocol/slave/builtins/service-fc02.js">MBSlaveProtocolReadDiscreteInputService</a></td>
+<td><a href="../modbus/protocol/slave/builtins/service-fc02.js">MBSlaveProtocolReadDiscreteInputService</a></td>
 </tr>
 <tr>
 <td>0x03</td>
 <td>Read Holding Registers</td>
-<td><a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/protocol/slave/builtins/service-fc03.js">MBSlaveProtocolReadHoldingRegisterService</a></td>
+<td><a href="../modbus/protocol/slave/builtins/service-fc03.js">MBSlaveProtocolReadHoldingRegisterService</a></td>
 </tr>
 <tr>
 <td>0x04</td>
 <td>Read Input Registers</td>
-<td><a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/protocol/slave/builtins/service-fc04.js">MBSlaveProtocolReadInputRegisterService</a></td>
+<td><a href="../modbus/protocol/slave/builtins/service-fc04.js">MBSlaveProtocolReadInputRegisterService</a></td>
 </tr>
 <tr>
 <td>0x05</td>
 <td>Write Single Coil</td>
-<td><a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/protocol/slave/builtins/service-fc05.js">MBSlaveProtocolWriteSingleCoilService</a></td>
+<td><a href="../modbus/protocol/slave/builtins/service-fc05.js">MBSlaveProtocolWriteSingleCoilService</a></td>
 </tr>
 <tr>
 <td>0x06</td>
 <td>Write Single Register</td>
-<td><a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/protocol/slave/builtins/service-fc06.js">MBSlaveProtocolWriteSingleRegisterService</a></td>
+<td><a href="../modbus/protocol/slave/builtins/service-fc06.js">MBSlaveProtocolWriteSingleRegisterService</a></td>
 </tr>
 <tr>
 <td>0x0F</td>
 <td>Write Multiple Coils</td>
-<td><a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/protocol/slave/builtins/service-fc0f.js">MBSlaveProtocolWriteMultipleCoilsService</a></td>
+<td><a href="../modbus/protocol/slave/builtins/service-fc0f.js">MBSlaveProtocolWriteMultipleCoilsService</a></td>
 </tr>
 <tr>
 <td>0x10</td>
 <td>Write Multiple Registers</td>
-<td><a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/protocol/slave/builtins/service-fc10.js">MBSlaveProtocolWriteMultipleRegistersService</a></td>
+<td><a href="../modbus/protocol/slave/builtins/service-fc10.js">MBSlaveProtocolWriteMultipleRegistersService</a></td>
 </tr>
 </tbody>
 </table>
 
-If the slave supports specified function code, the protocol-layer service must be registered to the service host which is an instance of class <b>[MBSlaveProtocolServiceHost](https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/protocol/slave/service.js)</b>.
+If the slave supports specified function code, the protocol-layer service must be registered to the service host which is an instance of class <b>[MBSlaveProtocolServiceHost](../modbus/protocol/slave/service.js)</b>.
 
-Here is a code piece from [examples/01-modbus-tcp-server/server.js](https://github.com/TaikiAkita/mbstack-nodejs/blob/master/examples/01-modbus-tcp-server/server.js) which demostrates how to register protocol-layer services to the service host of the protocol-layer subsystem:
+Here is a code piece from [examples/01-modbus-tcp-server/server.js](../examples/01-modbus-tcp-server/server.js) which demostrates how to register protocol-layer services to the service host of the protocol-layer subsystem:
 
 ```
 ...
@@ -216,14 +216,14 @@ this.initiateProtocolLayer = async  function(
 
 #### Protocol-layer subsystem
 
-The protocol-layer subsystem is implemented in <b>[MBSlaveProtocolLayer](https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/protocol/slave/layer.js)</b> class. It wraps the protocol-layer service host and shall be initialized by the initiator during system startup.
+The protocol-layer subsystem is implemented in <b>[MBSlaveProtocolLayer](../modbus/protocol/slave/layer.js)</b> class. It wraps the protocol-layer service host and shall be initialized by the initiator during system startup.
 
 
 #### Transport-layer subsystem
 
 The transport-layer subsystem abstracts PDU reception/transmission from the protocol-layer and application-layer. The only mission of the upper application to the transport-layer is to select and create a transport-layer subsystem with specified configuration.
 
-A transport-layer subsystem is an implementation of interface class <b>[IMBSlaveTransport](https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/transport/core.js)</b> and <b>[IMBSlaveTransportFactory](https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/transport/core.js)</b>.
+A transport-layer subsystem is an implementation of interface class <b>[IMBSlaveTransport](../modbus/transport/core.js)</b> and <b>[IMBSlaveTransportFactory](../modbus/transport/core.js)</b>.
 
 Currently, this package provides following transport-layer subsystem:
 
@@ -232,23 +232,21 @@ Currently, this package provides following transport-layer subsystem:
 <tr>
 <td rowspan="2">Serial (typically RS485)</td>
 <td>RTU</td>
-<td><a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/transport/serial/rtu/slave/slrtuslave-transport.js">MBRtuSlaveTransport</a>, <a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/transport/serial/rtu/slave/slrtuslave-transport.js">MBRtuSlaveTransportFactory</a></td>
-<td></td>
+<td><a href="../modbus/transport/serial/rtu/slave/slrtuslave-transport.js">MBRtuSlaveTransport</a>, <a href="../modbus/transport/serial/rtu/slave/slrtuslave-transport.js">MBRtuSlaveTransportFactory</a></td>
 </tr>
 <tr>
 <td>ASCII</td>
-<td><a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/transport/serial/ascii/slave/slasciislave-transport.js">MBAsciiSlaveTransport</a>, <a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/transport/serial/ascii/slave/slasciislave-transport.js">MBAsciiSlaveTransportFactory</a></td>
-<td></td>
+<td><a href="../modbus/transport/serial/ascii/slave/slasciislave-transport.js">MBAsciiSlaveTransport</a>, <a href="../modbus/transport/serial/ascii/slave/slasciislave-transport.js">MBAsciiSlaveTransportFactory</a></td>
 </tr>
 <tr>
 <td>TCP/IP</td>
 <td>TCP</td>
-<td><a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/transport/tcp/slave/tcpslave-transport.js">MBTCPSlaveTransport</a>, <a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/transport/tcp/slave/tcpslave-transport.js">MBTCPSlaveTransportFactory</a></td>
+<td><a href="../modbus/transport/tcp/slave/tcpslave-transport.js">MBTCPSlaveTransport</a>, <a href="../modbus/transport/tcp/slave/tcpslave-transport.js">MBTCPSlaveTransportFactory</a></td>
 </tr>
 </tbody>
 </table>
 
-Here is a code piece from [examples/01-modbus-tcp-server/server.js](https://github.com/TaikiAkita/mbstack-nodejs/blob/master/examples/01-modbus-tcp-server/server.js) which demostrates how to create (initialize) a transport-layer subsystem:
+Here is a code piece from [examples/01-modbus-tcp-server/server.js](../examples/01-modbus-tcp-server/server.js) which demostrates how to create (initialize) a transport-layer subsystem:
 
 ```
 this.initiateTransportLayer = async function(
@@ -271,11 +269,11 @@ this.initiateTransportLayer = async function(
 };
 ```
 
-The configuration guide can be found in [Modbus/TCP, RTU, ASCII Transport Layer Subsystem Configuration Guide](https://github.com/TaikiAkita/mbstack-nodejs/tree/master/docs/transport-layer).
+The configuration guide can be found in Transport-Layer Subsystem Configuration Guide ([TCP](transport-layer/tcp-configguide.md), [RTU](transport-layer/rtu-configguide.md), [ASCII](transport-layer/ascii-configguide.md)).
 
 #### Initiator
 
-Initiator class provides implementation of <b>[IMBSlaveServiceInitiator](https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/service/slave.js)</b> interface. It has the responsibility to initialize all subsystems, including:
+Initiator class provides implementation of <b>[IMBSlaveServiceInitiator](../modbus/service/slave.js)</b> interface. It has the responsibility to initialize all subsystems, including:
 
  - The protocol-layer subsystem.
  - The transport-layer subsystem.
@@ -283,13 +281,13 @@ Initiator class provides implementation of <b>[IMBSlaveServiceInitiator](https:/
 
 #### Application-Layer Service
 
-The application-layer service implemented in <b>[MBSlaveService](https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/service/slave.js)</b> class wraps the whole life-cycle of a Modbus slave. It has the responsibility to:
+The application-layer service implemented in <b>[MBSlaveService](../modbus/service/slave.js)</b> class wraps the whole life-cycle of a Modbus slave. It has the responsibility to:
 
  - Initialize subsystems by using the initiator.
  - Coordinate all subsystems.
  - Finalize subsystems (when application requests).
 
-Here is a code piece from [examples/01-modbus-tcp-server/server.js](https://github.com/TaikiAkita/mbstack-nodejs/blob/master/examples/01-modbus-tcp-server/server.js) which demostrates the general usage of the application-layer service:
+Here is a code piece from [examples/01-modbus-tcp-server/server.js](../examples/01-modbus-tcp-server/server.js) which demostrates the general usage of the application-layer service:
 
 ```
 //  Create a slave service.
@@ -312,7 +310,7 @@ console.log("The server has been stopped.");
 
 #### Command (Function Wrapper)
 
-A command (or "Function Wrapper") is an instance of <b>[MBMasterProtocolCommand](https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/protocol/master/cmd.js)</b> class. It wraps the Protocol Data Unit (PDU) generator used to generate query PDU and parser that parses the answer PDU.
+A command (or "Function Wrapper") is an instance of <b>[MBMasterProtocolCommand](../modbus/protocol/master/cmd.js)</b> class. It wraps the Protocol Data Unit (PDU) generator used to generate query PDU and parser that parses the answer PDU.
 
 A set of helper routines are provided to create new command object, see following table:
 
@@ -326,49 +324,49 @@ A set of helper routines are provided to create new command object, see followin
 <tr>
 <td>0x01</td>
 <td>Read Coils</td>
-<td><a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/protocol/master/builtins/cmd-fc01.js">NewReadCoilsCommand()</a></td>
+<td><a href="../modbus/protocol/master/builtins/cmd-fc01.js">NewReadCoilsCommand()</a></td>
 </tr>
 <tr>
 <td>0x02</td>
 <td>Read Discrete Inputs</td>
-<td><a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/protocol/master/builtins/cmd-fc02.js">NewReadDiscreteInputsCommand()</a></td>
+<td><a href="../modbus/protocol/master/builtins/cmd-fc02.js">NewReadDiscreteInputsCommand()</a></td>
 </tr>
 <tr>
 <td>0x03</td>
 <td>Read Holding Registers</td>
-<td><a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/protocol/master/builtins/cmd-fc03.js">NewReadHoldingRegistersCommand()</a></td>
+<td><a href="../modbus/protocol/master/builtins/cmd-fc03.js">NewReadHoldingRegistersCommand()</a></td>
 </tr>
 <tr>
 <td>0x04</td>
 <td>Read Input Registers</td>
-<td><a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/protocol/master/builtins/cmd-fc04.js">NewReadInputRegistersCommand()</a></td>
+<td><a href="../modbus/protocol/master/builtins/cmd-fc04.js">NewReadInputRegistersCommand()</a></td>
 </tr>
 <tr>
 <td>0x05</td>
 <td>Write Single Coil</td>
-<td><a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/protocol/master/builtins/cmd-fc05.js">NewWriteSingleCoilCommand()</a></td>
+<td><a href="../modbus/protocol/master/builtins/cmd-fc05.js">NewWriteSingleCoilCommand()</a></td>
 </tr>
 <tr>
 <td>0x06</td>
 <td>Write Single Register</td>
-<td><a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/protocol/master/builtins/cmd-fc06.js">NewWriteSingleRegisterCommand()</a></td>
+<td><a href="../modbus/protocol/master/builtins/cmd-fc06.js">NewWriteSingleRegisterCommand()</a></td>
 </tr>
 <tr>
 <td>0x0F</td>
 <td>Write Multiple Coils</td>
-<td><a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/protocol/master/builtins/cmd-fc0f.js">NewWriteMultipleCoilsCommand()</a></td>
+<td><a href="../modbus/protocol/master/builtins/cmd-fc0f.js">NewWriteMultipleCoilsCommand()</a></td>
 </tr>
 <tr>
 <td>0x10</td>
 <td>Write Multiple Registers</td>
-<td><a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/protocol/master/builtins/cmd-fc10.js">NewWriteMultipleRegistersCommand()</a></td>
+<td><a href="../modbus/protocol/master/builtins/cmd-fc10.js">NewWriteMultipleRegistersCommand()</a></td>
 </tr>
 </tbody>
 </table>
 
 #### Transport-layer subsystem
 
-A transport-layer subsystem is an implementation of interface class <b>[IMBMasterTransport](https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/transport/core.js)</b> and <b>[IMBMasterTransportFactory](https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/transport/core.js)</b>.
+A transport-layer subsystem is an implementation of interface class <b>[IMBMasterTransport](../modbus/transport/core.js)</b> and <b>[IMBMasterTransportFactory](../modbus/transport/core.js)</b>.
 
 Currently, this package provides following transport-layer subsystem:
 
@@ -377,25 +375,23 @@ Currently, this package provides following transport-layer subsystem:
 <tr>
 <td rowspan="2">Serial (typically RS485)</td>
 <td>RTU</td>
-<td><a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/transport/serial/rtu/master/slrtumaster-transport.js">MBRtuMasterTransport</a>, <a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/transport/serial/rtu/master/slrtumaster-transport.js">MBRtuMasterTransportFactory</a></td>
-<td></td>
+<td><a href="../modbus/transport/serial/rtu/master/slrtumaster-transport.js">MBRtuMasterTransport</a>, <a href="../modbus/transport/serial/rtu/master/slrtumaster-transport.js">MBRtuMasterTransportFactory</a></td>
 </tr>
 <tr>
 <td>ASCII</td>
-<td><a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/transport/serial/ascii/master/slasciimaster-transport.js">MBAsciiMasterTransport</a>, <a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/transport/serial/ascii/master/slasciimaster-transport.js">MBAsciiMasterTransportFactory</a></td>
-<td></td>
+<td><a href="../modbus/transport/serial/ascii/master/slasciimaster-transport.js">MBAsciiMasterTransport</a>, <a href="../modbus/transport/serial/ascii/master/slasciimaster-transport.js">MBAsciiMasterTransportFactory</a></td>
 </tr>
 <tr>
 <td>TCP/IP</td>
 <td>TCP</td>
-<td><a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/transport/tcp/master/tcpmaster-transport.js">MBTCPMasterTransport</a>, <a href="https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/transport/tcp/master/tcpmaster-transport.js">MBTCPMasterTransportFactory</a></td>
+<td><a href="../modbus/transport/tcp/master/tcpmaster-transport.js">MBTCPMasterTransport</a>, <a href="../modbus/transport/tcp/master/tcpmaster-transport.js">MBTCPMasterTransportFactory</a></td>
 </tr>
 </tbody>
 </table>
 
 #### Initiator
 
-Initiator class provides implementation of <b>[IMBMasterServiceInitiator](https://github.com/TaikiAkita/mbstack-nodejs/blob/master/modbus/service/master.js)</b> interface. It has the responsibility to initialize all subsystems, including:
+Initiator class provides implementation of <b>[IMBMasterServiceInitiator](../modbus/service/master.js)</b> interface. It has the responsibility to initialize all subsystems, including:
 
  - The transport-layer subsystem.
 
