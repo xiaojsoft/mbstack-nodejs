@@ -114,7 +114,7 @@ function IMBSerialPort() {
      *  @throws {MBInvalidOperationError}
      *    - The serial port was already disposed.
      *  @param {Number} ns
-     *    - The tick interval (unit: nanoseconds)
+     *    - The tick interval (unit: nanoseconds).
      */
     this.timerSetInterval = function(ns) {
         throw new Error("Not implemented.");
@@ -215,10 +215,10 @@ function IMBSerialPort() {
      *    - Device failure.
      *  @throws {MBOperationCancelledError}
      *    - The cancellator was activated.
-     *  @param {ConditionalSynchronizer} [cancellator]
-     *    - The cancellator.
      *  @param {Buffer} data
      *    - The data.
+     *  @param {ConditionalSynchronizer} [cancellator]
+     *    - The cancellator.
      *  @returns {Promise<void>}
      *    - The promise object (resolves with if succeed, rejects if error 
      *      occurred).
@@ -351,10 +351,10 @@ function MBSerialPortOption(
     };
 
     /**
-     *  Fork a new copy of this option.
+     *  Get a copy of this option.
      * 
      *  @returns {MBSerialPortOption}
-     *    - The forked serial port option.
+     *    - The copied serial port option.
      */
     this.fork = function() {
         return new MBSerialPortOption(baudrate, nDataBits, nStopBits, parity);
@@ -394,7 +394,7 @@ function IMBSerialPortDriver() {
      *    - The serial port options.
      *  @param {ConditionalSynchronizer} [cancellator]
      *    - The cancellator.
-     *  @returns {IMBSerialPort}
+     *  @returns {Promise<IMBSerialPort>}
      *    - The promise object (resolves with the serial port instance if 
      *      succeed, rejects if error occurred).
      */

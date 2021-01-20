@@ -55,6 +55,8 @@ const FUNCTION_CODE = 0x10;
  *    - The starting address of the registers.
  *  @param {Number[]} hregValues 
  *    - The value of the registers.
+ *  @returns {MBMasterProtocolCommand}
+ *    - The command.
  */
 function NewWriteMultipleRegistersCommand(
     hregStartAddr,

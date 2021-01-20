@@ -656,6 +656,26 @@ function MBTCPSlaveTransport(
     //
 
     /**
+     *  Get the server bind address.
+     * 
+     *  @returns {String}
+     *    - The bind address.
+     */
+    this.getBindAddress = function() {
+        return serverBindAddress;
+    };
+
+    /**
+     *  Get the server bind port.
+     * 
+     *  @returns {Number}
+     *    - The bind port.
+     */
+    this.getBindPort = function() {
+        return serverBindPort;
+    };
+
+    /**
      *  Reset the value of specified counter.
      * 
      *  Note(s):

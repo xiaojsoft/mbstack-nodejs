@@ -181,6 +181,8 @@ function MBExampleDataModel() {
      *    - The starting address of the discrete input(s) to be prefetched.
      *  @param {Number} count
      *    - The quantity of the discrete input(s) to be prefetched.
+     *  @param {ConditionalSynchronizer} [cancellator]
+     *    - The cancellator.
      *  @returns {Promise<void>}
      *    - The promise object (resolves if succeed, rejects if error occurred).
      */
@@ -248,6 +250,8 @@ function MBExampleDataModel() {
      *    - The starting address of the coil(s) to be prefetched.
      *  @param {Number} count
      *    - The quantity of the coil(s) to be prefetched.
+     *  @param {ConditionalSynchronizer} [cancellator]
+     *    - The cancellator.
      *  @returns {Promise<void>}
      *    - The promise object (resolves if succeed, rejects if error occurred).
      */
@@ -337,6 +341,8 @@ function MBExampleDataModel() {
      *    - The starting address of the input register(s) to be prefetched.
      *  @param {Number} count
      *    - The quantity of the input register(s) to be prefetched.
+     *  @param {ConditionalSynchronizer} [cancellator]
+     *    - The cancellator.
      *  @returns {Promise<void>}
      *    - The promise object (resolves if succeed, rejects if error occurred).
      */
@@ -405,6 +411,8 @@ function MBExampleDataModel() {
      *    - The starting address of the holding register(s) to be prefetched.
      *  @param {Number} count
      *    - The quantity of the holding register(s) to be prefetched.
+     *  @param {ConditionalSynchronizer} [cancellator]
+     *    - The cancellator.
      *  @returns {Promise<void>}
      *    - The promise object (resolves if succeed, rejects if error occurred).
      */

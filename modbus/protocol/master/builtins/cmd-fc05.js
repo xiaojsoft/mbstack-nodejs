@@ -52,6 +52,8 @@ const FUNCTION_CODE = 0x05;
  *    - The address of the coil.
  *  @param {Boolean} outputValue 
  *    - The value of the coil.
+ *  @returns {MBMasterProtocolCommand}
+ *    - The command.
  */
 function NewWriteSingleCoilCommand(
     outputAddr,

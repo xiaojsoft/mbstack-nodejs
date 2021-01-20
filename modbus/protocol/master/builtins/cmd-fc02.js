@@ -54,6 +54,8 @@ const FUNCTION_CODE = 0x02;
  *    - The start address of the discrete inputs.
  *  @param {Number} dciQuantity 
  *    - The quantity of the discrete inputs.
+ *  @returns {MBMasterProtocolCommand}
+ *    - The command.
  */
 function NewReadDiscreteInputsCommand(
     dciStartAddr,

@@ -293,7 +293,7 @@ function MBTCPMasterTransport(
      *  @param {MBTransportQuery} query 
      *    - The query object.
      *  @param {Boolean} [noAnswer] 
-     *    - True if response from the slave is needed.
+     *    - True if response from the slave is not needed.
      *  @param {ConditionalSynchronizer} [cancellator]
      *    - The cancellator.
      *  @returns {Promise<?MBTransportAnswer>}
@@ -601,6 +601,8 @@ function MBTCPMasterTransport(
     /**
      *  Close the transport.
      * 
+     *  @throws {MBInvalidOperationError}
+     *    - Transport was already closed.
      *  @param {Boolean} [forcibly] 
      *    - True if the transport shall be closed forcibly.
      */

@@ -53,6 +53,8 @@ const FUNCTION_CODE = 0x0F;
  *    - The starting address of the coils.
  *  @param {Boolean[]} coilValues 
  *    - The value of the coils.
+ *  @returns {MBMasterProtocolCommand}
+ *    - The command.
  */
 function NewWriteMultipleCoilsCommand(
     coilStartAddr,

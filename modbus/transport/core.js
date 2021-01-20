@@ -222,7 +222,7 @@ function IMBMasterTransport() {
      *  @param {MBTransportQuery} query 
      *    - The query object.
      *  @param {Boolean} [noAnswer] 
-     *    - True if response from the slave is needed.
+     *    - True if response from the slave is not needed.
      *  @param {ConditionalSynchronizer} [cancellator]
      *    - The cancellator.
      *  @returns {Promise<?MBTransportAnswer>}
@@ -254,7 +254,6 @@ function IMBMasterTransport() {
         throw new Error("Not implemented.");
     };
 
-
     /**
      *  Get whether the transport was closed.
      * 
@@ -268,6 +267,8 @@ function IMBMasterTransport() {
     /**
      *  Close the transport.
      * 
+     *  @throws {MBInvalidOperationError}
+     *    - Transport was already closed.
      *  @param {Boolean} [forcibly] 
      *    - True if the transport shall be closed forcibly.
      */

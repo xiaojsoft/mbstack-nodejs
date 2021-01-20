@@ -88,6 +88,7 @@ const RXBUFSIZE = 65536;
  *  Modbus generic serial port.
  * 
  *  @constructor
+ *  @extends {IMBSerialPort}
  *  @param {SerialPort} serialport
  *    - The serial port.
  *  @param {MBSerialPortOption} options
@@ -198,7 +199,7 @@ function MBGenericSerialPort(serialport, options) {
      *  @throws {MBInvalidOperationError}
      *    - The serial port was already disposed.
      *  @param {Number} ns
-     *    - The tick interval (unit: nanoseconds)
+     *    - The tick interval (unit: nanoseconds).
      */
     this.timerSetInterval = function(ns) {
         //  Throw if disposed.
@@ -386,10 +387,10 @@ function MBGenericSerialPort(serialport, options) {
      *    - Device failure.
      *  @throws {MBOperationCancelledError}
      *    - The cancellator was activated.
-     *  @param {ConditionalSynchronizer} [cancellator]
-     *    - The cancellator.
      *  @param {Buffer} data
      *    - The data.
+     *  @param {ConditionalSynchronizer} [cancellator]
+     *    - The cancellator.
      *  @returns {Promise<void>}
      *    - The promise object (resolves with if succeed, rejects if error 
      *      occurred).
@@ -487,6 +488,7 @@ function MBGenericSerialPort(serialport, options) {
  *  Modbus generic serial port driver.
  * 
  *  @constructor
+ *  @extends {IMBSerialPortDriver}
  */
 function MBGenericSerialPortDriver() {
     //  Let parent class initialize.
@@ -519,7 +521,7 @@ function MBGenericSerialPortDriver() {
      *    - The serial port options.
      *  @param {ConditionalSynchronizer} [cancellator]
      *    - The cancellator.
-     *  @returns {IMBSerialPort}
+     *  @returns {Promise<IMBSerialPort>}
      *    - The promise object (resolves with the serial port instance if 
      *      succeed, rejects if error occurred).
      */

@@ -236,6 +236,12 @@ function MBSlaveService(
     /**
      *  Get the value of the Slave Exception Error Count counter.
      * 
+     *  Note(s):
+     *    [1] The Slave Exception Error Count counter saves the quantity of 
+     *        exception error detected by the slave (including error detected in
+     *        broadcast messages even if an exception message is not returned in
+     *        this case).
+     * 
      *  @returns {BigInt}
      *    - The value.
      */
@@ -858,6 +864,9 @@ function MBSlaveService(
  *    - The service initiator.
  *  @param {ConditionalSynchronizer} [cancellator]
  *    - The cancellator.
+ *  @returns {Promise<MBSlaveService>}
+ *    - The promise object (resolves with the slave service if succeed, rejects 
+ *      if error occurred).
  */
 MBSlaveService.Create = async function(
     initiator, 

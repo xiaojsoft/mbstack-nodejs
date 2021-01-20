@@ -54,6 +54,8 @@ const FUNCTION_CODE = 0x04;
  *    - The start address of the input registers.
  *  @param {Number} iregQuantity 
  *    - The quantity of the input registers.
+ *  @returns {MBMasterProtocolCommand}
+ *    - The command.
  */
 function NewReadInputRegistersCommand(
     iregStartAddr,

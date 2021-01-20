@@ -122,6 +122,9 @@ function MBMasterService(
      *    - The timeout (NULL if not limited).
      *  @param {ConditionalSynchronizer} [cancellator] 
      *    - The cancellator.
+     *  @returns {Promise<*>}
+     *    - The promise object (resolves with the answer if succeed, rejects if 
+     *      error occurred).
      */
     this.query = async function(
         unitID, 
@@ -338,6 +341,9 @@ function MBMasterService(
  *    - The service initiator.
  *  @param {ConditionalSynchronizer} [cancellator]
  *    - The cancellator.
+ *  @returns {Promise<MBMasterService>}
+ *    - The promise object (resolves with the master service if succeed, rejects
+ *      if error occurred).
  */
 MBMasterService.Create = async function(
     initiator, 

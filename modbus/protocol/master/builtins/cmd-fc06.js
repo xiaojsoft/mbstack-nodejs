@@ -52,6 +52,8 @@ const FUNCTION_CODE = 0x06;
  *    - The address of the register.
  *  @param {Number} hregValue 
  *    - The value of the register.
+ *  @returns {MBMasterProtocolCommand}
+ *    - The command.
  */
 function NewWriteSingleRegisterCommand(
     hregAddr,

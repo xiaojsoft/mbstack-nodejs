@@ -54,6 +54,8 @@ const FUNCTION_CODE = 0x01;
  *    - The start address of the coils.
  *  @param {Number} coilQuantity 
  *    - The quantity of the coils.
+ *  @returns {MBMasterProtocolCommand}
+ *    - The command.
  */
 function NewReadCoilsCommand(
     coilStartAddr,

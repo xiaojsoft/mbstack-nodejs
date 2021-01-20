@@ -49,11 +49,14 @@ const FUNCTION_CODE = 0x03;
  *        0x00 (0) ~ 0x7D (125).
  * 
  *  @throws {MBParameterError}
- *    - Either the start address or the quantity of holding registers is invalid.
+ *    - Either the start address or the quantity of holding registers is 
+ *      invalid.
  *  @param {Number} hregStartAddr 
  *    - The start address of the holding registers.
  *  @param {Number} hregQuantity 
  *    - The quantity of the holding registers.
+ *  @returns {MBMasterProtocolCommand}
+ *    - The command.
  */
 function NewReadHoldingRegistersCommand(
     hregStartAddr,

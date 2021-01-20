@@ -112,6 +112,8 @@ function MBPDU(functionCode, data) {
  *    - The function code.
  *  @param {Number} exceptionCode 
  *    - The exception code.
+ *  @returns {MBPDU}
+ *    - The PDU.
  */
 MBPDU.NewException = function(functionCode, exceptionCode) {
     //  Check the function code.
