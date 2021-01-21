@@ -688,6 +688,7 @@ Query one peer (slave).
 </thead>
 <tbody>
 <tr><td><i>MBParameterError</i></td><td>Either the unit identifier or the timeout is invalid.</td></tr>
+<tr><td><i>MBTimeoutError</i></td><td>Timeout exceeds.</td></tr>
 <tr><td><i>MBParseError</i></td><td>Failed to parse the answer from the peer (slave).</td></tr>
 <tr><td><i>MBPeerError</i></td><td>Peer (slave) threw an exception.</td></tr>
 <tr><td><i>MBCommunicationError</i></td><td>Communication failed.</td></tr>

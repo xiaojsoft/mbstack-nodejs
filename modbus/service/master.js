@@ -104,6 +104,8 @@ function MBMasterService(
      * 
      *  @throws {MBParameterError}
      *    - Either the unit identifier or the timeout is invalid.
+     *  @throws {MBTimeoutError}
+     *    - Timeout exceeds.
      *  @throws {MBParseError}
      *    - Failed to parse the answer from the peer (slave).
      *  @throws {MBPeerError}
@@ -184,7 +186,7 @@ function MBMasterService(
                     "The cancellator was activated."
                 );
             } else if (wh == wh3) {
-                throw new MBTimeoutError("Timeout exceed.");
+                throw new MBTimeoutError("Timeout exceeds.");
             } else {
                 ReportBug("Invalid wait handler.", true, MBBugError);
             }
