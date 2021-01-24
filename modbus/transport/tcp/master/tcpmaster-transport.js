@@ -335,7 +335,7 @@ function MBTCPMasterTransport(
                 let wh = rsv.getPromiseObject();
                 if (wh == wh1) {
                     conn = rsv.getValue();
-                    if (conn == null) {
+                    if (conn === null) {
                         let msg = null;
                         if (syncClosed.isFullfilled()) {
                             msg = "Transport was already closed.";
