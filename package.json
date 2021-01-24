@@ -10,7 +10,7 @@
     "xrtlibrary-async": "^1.0.17",
     "xrtlibrary-bughandler": "^1.0.3",
     "xrtlibrary-tcputilities": "^1.0.12",
-    "xrtlibrary-traverse": "^1.0.11"
+    "xrtlibrary-traverse": "^1.0.13"
   },
   "devDependencies": {
     "@types/node": "^10.17.51"
