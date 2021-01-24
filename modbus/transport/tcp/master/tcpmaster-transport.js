@@ -516,7 +516,7 @@ function MBTCPMasterTransport(
                         "The cancellator was activated."
                     );
                 } else {
-                    ReportBug("Invalid wait handler.");
+                    ReportBug("Invalid wait handler.", true, MBBugError);
                 }
 
                 //  Get and check the response (answer) protocol payload.

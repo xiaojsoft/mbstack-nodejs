@@ -487,7 +487,7 @@ function MBAsciiTransceiver(
         ReportBug(Util.format(
             "RX coroutine throw an exception (error=\"%s\").",
             error.message || "Unknown error."
-        ));
+        ), false, MBBugError);
     }).finally(function() {
         //  Emit "end" event.
         rxEnded = true;
@@ -590,7 +590,7 @@ function MBAsciiTransceiver(
         ReportBug(Util.format(
             "TX coroutine throw an exception (error=\"%s\").",
             error.message || "Unknown error."
-        ));
+        ), false, MBBugError);
     }).finally(function() {
         syncTxCrtExited.fullfill();
 

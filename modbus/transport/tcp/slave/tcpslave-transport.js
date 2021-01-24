@@ -626,7 +626,7 @@ function MBTCPSlaveTransport(
                 ReportBug(Util.format(
                     "Transaction coroutine throw an exception (error=\"%s\").",
                     error.message || "Unknown error."
-                ));
+                ), false, MBBugError);
             });
         }
 

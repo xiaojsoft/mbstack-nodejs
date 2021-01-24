@@ -906,14 +906,14 @@ function MBRtuTransceiver(
                     ReportBug("Invalid wait handler.", true, MBBugError);
                 }
             } else {
-                ReportBug("Invalid wait handler.");
+                ReportBug("Invalid wait handler.", true, MBBugError);
             }
         }
     })().catch(function(error) {
         ReportBug(Util.format(
             "Main coroutine throw an exception (error=\"%s\").",
             error.message || "Unknown error."
-        ));
+        ), false, MBBugError);
     }).finally(function() {
         //  Trigger the closed signal.
         syncClosed.fullfill();
