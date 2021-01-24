@@ -26,10 +26,12 @@ InvalidFrame
 InvalidNode
 InvalidDataAddress
 InvalidDataValue
-ProtocolServiceExisted
-ProtocolServiceNotExist
-TransportExisted
-TransportNotExist
+ProtocolService
+ProtocolServiceExisted ProtocolService
+ProtocolServiceNotExist ProtocolService
+Transport
+TransportExisted Transport
+TransportNotExist Transport
 Initiate
 Peer
 Timeout

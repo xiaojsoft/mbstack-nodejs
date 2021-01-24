@@ -214,10 +214,23 @@ function MBInvalidDataValueError(message = "") {
 }
 
 /**
- *  MB protocol service existed error.
+ *  MB protocol service error.
  * 
  *  @constructor
  *  @extends {MBError}
+ *  @param {String} [message]
+ *      - The message.
+ */
+function MBProtocolServiceError(message = "") {
+    //  Let parent class initialize.
+    MBError.call(this, message);
+}
+
+/**
+ *  MB protocol service existed error.
+ * 
+ *  @constructor
+ *  @extends {MBProtocolServiceError}
  *  @param {String} [message]
  *      - The message.
  */
@@ -230,7 +243,7 @@ function MBProtocolServiceExistedError(message = "") {
  *  MB protocol service not exist error.
  * 
  *  @constructor
- *  @extends {MBError}
+ *  @extends {MBProtocolServiceError}
  *  @param {String} [message]
  *      - The message.
  */
@@ -240,10 +253,23 @@ function MBProtocolServiceNotExistError(message = "") {
 }
 
 /**
- *  MB transport existed error.
+ *  MB transport error.
  * 
  *  @constructor
  *  @extends {MBError}
+ *  @param {String} [message]
+ *      - The message.
+ */
+function MBTransportError(message = "") {
+    //  Let parent class initialize.
+    MBError.call(this, message);
+}
+
+/**
+ *  MB transport existed error.
+ * 
+ *  @constructor
+ *  @extends {MBTransportError}
  *  @param {String} [message]
  *      - The message.
  */
@@ -256,7 +282,7 @@ function MBTransportExistedError(message = "") {
  *  MB transport not exist error.
  * 
  *  @constructor
- *  @extends {MBError}
+ *  @extends {MBTransportError}
  *  @param {String} [message]
  *      - The message.
  */
@@ -348,10 +374,12 @@ Util.inherits(MBInvalidFrameError, MBError);
 Util.inherits(MBInvalidNodeError, MBError);
 Util.inherits(MBInvalidDataAddressError, MBError);
 Util.inherits(MBInvalidDataValueError, MBError);
-Util.inherits(MBProtocolServiceExistedError, MBError);
-Util.inherits(MBProtocolServiceNotExistError, MBError);
-Util.inherits(MBTransportExistedError, MBError);
-Util.inherits(MBTransportNotExistError, MBError);
+Util.inherits(MBProtocolServiceError, MBError);
+Util.inherits(MBProtocolServiceExistedError, MBProtocolServiceError);
+Util.inherits(MBProtocolServiceNotExistError, MBProtocolServiceError);
+Util.inherits(MBTransportError, MBError);
+Util.inherits(MBTransportExistedError, MBTransportError);
+Util.inherits(MBTransportNotExistError, MBTransportError);
 Util.inherits(MBInitiateError, MBError);
 Util.inherits(MBPeerError, MBError);
 Util.inherits(MBTimeoutError, MBError);
@@ -375,8 +403,10 @@ module.exports = {
     "MBInvalidNodeError": MBInvalidNodeError,
     "MBInvalidDataAddressError": MBInvalidDataAddressError,
     "MBInvalidDataValueError": MBInvalidDataValueError,
+    "MBProtocolServiceError": MBProtocolServiceError,
     "MBProtocolServiceExistedError": MBProtocolServiceExistedError,
     "MBProtocolServiceNotExistError": MBProtocolServiceNotExistError,
+    "MBTransportError": MBTransportError,
     "MBTransportExistedError": MBTransportExistedError,
     "MBTransportNotExistError": MBTransportNotExistError,
     "MBInitiateError": MBInitiateError,

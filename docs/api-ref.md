@@ -3741,10 +3741,12 @@ Available error classes:
 <tr><td><i>MBInvalidNodeError</i></td><td><i>MBError</i></td><td>Modbus invalid node error.</td></tr>
 <tr><td><i>MBInvalidDataAddressError</i></td><td><i>MBError</i></td><td>Modbus invalid data address error.</td></tr>
 <tr><td><i>MBInvalidDataValueError</i></td><td><i>MBError</i></td><td>Modbus invalid data value error.</td></tr>
-<tr><td><i>MBProtocolServiceExistedError</i></td><td><i>MBError</i></td><td>Modbus protocol service existed error.</td></tr>
-<tr><td><i>MBProtocolServiceNotExistError</i></td><td><i>MBError</i></td><td>Modbus protocol service not exist error.</td></tr>
-<tr><td><i>MBTransportExistedError</i></td><td><i>MBError</i></td><td>Modbus transport existed error.</td></tr>
-<tr><td><i>MBTransportNotExistError</i></td><td><i>MBError</i></td><td>Modbus transport not exist error.</td></tr>
+<tr><td><i>MBProtocolServiceError</i></td><td><i>MBError</i></td><td>Modbus protocol service error.</td></tr>
+<tr><td><i>MBProtocolServiceExistedError</i></td><td><i>MBProtocolServiceError</i></td><td>Modbus protocol service existed error.</td></tr>
+<tr><td><i>MBProtocolServiceNotExistError</i></td><td><i>MBProtocolServiceError</i></td><td>Modbus protocol service not exist error.</td></tr>
+<tr><td><i>MBTransportError</i></td><td><i>MBError</i></td><td>Modbus transport error.</td></tr>
+<tr><td><i>MBTransportExistedError</i></td><td><i>MBTransportError</i></td><td>Modbus transport existed error.</td></tr>
+<tr><td><i>MBTransportNotExistError</i></td><td><i>MBTransportError</i></td><td>Modbus transport not exist error.</td></tr>
 <tr><td><i>MBInitiateError</i></td><td><i>MBError</i></td><td>Modbus initiate error.</td></tr>
 <tr><td><i>MBPeerError</i></td><td><i>MBError</i></td><td>Modbus peer error.</td></tr>
 <tr><td><i>MBTimeoutError</i></td><td><i>MBError</i></td><td>Modbus timeout error.</td></tr>

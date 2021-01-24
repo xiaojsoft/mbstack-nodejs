@@ -209,10 +209,14 @@ const MBInvalidDataAddressError =
     MbError.MBInvalidDataAddressError;
 const MBInvalidDataValueError = 
     MbError.MBInvalidDataValueError;
+const MBProtocolServiceError = 
+    MbError.MBProtocolServiceError;
 const MBProtocolServiceExistedError = 
     MbError.MBProtocolServiceExistedError;
 const MBProtocolServiceNotExistError = 
     MbError.MBProtocolServiceNotExistError;
+const MBTransportError = 
+    MbError.MBTransportError;
 const MBTransportExistedError = 
     MbError.MBTransportExistedError;
 const MBTransportNotExistError = 
@@ -531,10 +535,14 @@ module.exports = {
             MBInvalidDataAddressError,
         "MBInvalidDataValueError": 
             MBInvalidDataValueError,
+        "MBProtocolServiceError": 
+            MBProtocolServiceError,
         "MBProtocolServiceExistedError": 
             MBProtocolServiceExistedError,
         "MBProtocolServiceNotExistError": 
             MBProtocolServiceNotExistError,
+        "MBTransportError": 
+            MBTransportError,
         "MBTransportExistedError": 
             MBTransportExistedError,
         "MBTransportNotExistError": 
