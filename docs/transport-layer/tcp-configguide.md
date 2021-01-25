@@ -75,7 +75,7 @@ Detailed description:
 </tbody>
 </table>
 
-<u>Note about the "parallel" configuration (for master):
+<u>Note about the "parallel" configuration (for master)</u>:
  - A completed Modbus transaction is either:
     - The request (query) that needs no response (answer) and the request frame was transmitted to the slave.
     - The request (query) that needs response (answer), the request frame was transmitted to the slave and the response frame was received.
@@ -163,7 +163,7 @@ Detailed description:
 </tbody>
 </table>
 
-<u>Note about the "parallel" configuration (for slave):
+<u>Note about the "parallel" configuration (for slave)</u>:
  - A completed Modbus transaction is either:
     - The request (query) that needs no response (answer) and the request frame was handled by the protocol-layer.
     - The request (query) that needs response (answer), the request frame was handled by the protocol-layer and the response frame was transmitted to the master successfully.
