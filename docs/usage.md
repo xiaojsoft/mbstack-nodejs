@@ -292,7 +292,7 @@ Here is a code piece from [examples/01-modbus-tcp-server/server.js](../examples/
 ```
 //  Create a slave service.
 let slaveInitiator = new MBExampleSlaveServiceInitiator();
-let slave = await MBSlaveService.Create(slaveInitiator);
+let slave = await MBSlaveService.NewService(slaveInitiator);
 
 //  Handle SIGINT.
 Process.on("SIGINT", function() {

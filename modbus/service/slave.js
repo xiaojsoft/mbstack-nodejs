@@ -856,6 +856,9 @@ function MBSlaveService(
 /**
  *  Create a new slave service.
  * 
+ *  @deprecated
+ *    - This method would be removed in next major release.
+ *    - Use MBSlaveService.NewService() method instead.
  *  @throws {MBOperationCancelledError}
  *    - The cancellator was activated.
  *  @throws {MBInitiateError}
@@ -870,6 +873,35 @@ function MBSlaveService(
  */
 MBSlaveService.Create = async function(
     initiator, 
+    cancellator = new ConditionalSynchronizer()
+) {
+    return await MBSlaveService.NewService(
+        initiator, 
+        new MBSlaveServiceOption(), 
+        cancellator
+    );
+};
+
+/**
+ *  Get a new slave service.
+ * 
+ *  @throws {MBOperationCancelledError}
+ *    - The cancellator was activated.
+ *  @throws {MBInitiateError}
+ *    - Failed to initiate transport-layer, protocol-layer or data model.
+ *  @param {IMBSlaveServiceInitiator} initiator
+ *    - The service initiator.
+ *  @param {MBSlaveServiceOption} [options]
+ *    - The service options.
+ *  @param {ConditionalSynchronizer} [cancellator]
+ *    - The cancellator.
+ *  @returns {Promise<MBSlaveService>}
+ *    - The promise object (resolves with the slave service if succeed, rejects 
+ *      if error occurred).
+ */
+MBSlaveService.NewService = async function(
+    initiator, 
+    options = new MBSlaveServiceOption(),
     cancellator = new ConditionalSynchronizer()
 ) {
     //  Initiate data model.
@@ -894,7 +926,7 @@ MBSlaveService.Create = async function(
     }
 
     //  Create service.
-    return new MBSlaveService(model, layerProtocol, layerTransport);
+    return new MBSlaveService(model, layerProtocol, layerTransport, options);
 };
 
 /**

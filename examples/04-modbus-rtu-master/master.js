@@ -119,7 +119,7 @@ Util.inherits(MBExampleMasterServiceInitiator, IMBMasterServiceInitiator);
 (async function() {
     //  Create master.
     let masterInitiator = new MBExampleMasterServiceInitiator();
-    let master = await MBMasterService.Create(masterInitiator);
+    let master = await MBMasterService.NewService(masterInitiator);
 
     //  Do query 1.
     try {

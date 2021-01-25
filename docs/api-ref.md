@@ -804,6 +804,10 @@ Close the service.
 
 Create a new master service.
 
+> <u><b>Deprecation Warning</b></u>:
+>   - This method would be removed in next major release.
+>   - Use MBMasterService.NewService() method instead.
+
 <u>Exception(s)</u>:
 
 <table>
@@ -824,6 +828,46 @@ Create a new master service.
 </thead>
 <tbody>
 <tr><td><i>initiator</i></td><td><i>IMBMasterServiceInitiator</i></td><td>The service initiator.</td></tr>
+<tr><td><i>cancellator</i></td><td><i>ConditionalSynchronizer</i></td><td>The cancellator.</td></tr>
+</tbody>
+</table>
+
+<u>Return value</u>:
+
+<table>
+<thead>
+<th>Return Type</th><th>Return Description</th>
+</thead>
+<tbody>
+<tr><td><i>Promise&lt;MBMasterService&gt;</i></td><td>The promise object (resolves with the master service if succeed, rejects if error occurred).</td></tr>
+</tbody>
+</table>
+
+##### (Static Method) MBMasterService.NewService(initiator[options, [, cancellator]])
+
+Get a new master service.
+
+<u>Exception(s)</u>:
+
+<table>
+<thead>
+<th>Exception Class</th><th>Exception Description</th>
+</thead>
+<tbody>
+<tr><td><i>MBOperationCancelledError</i></td><td>The cancellator was activated.</td></tr>
+<tr><td><i>MBInitiateError</i></td><td>Failed to initiate transport-layer.</td></tr>
+</tbody>
+</table>
+
+<u>Parameter(s)</u>:
+
+<table>
+<thead>
+<th>Parameter Name</th><th>Parameter Type</th><th>Parameter Description</th>
+</thead>
+<tbody>
+<tr><td><i>initiator</i></td><td><i>IMBMasterServiceInitiator</i></td><td>The service initiator.</td></tr>
+<tr><td><i>options</i></td><td><i>MBMasterServiceOption</i></td><td>The service options.</td></tr>
 <tr><td><i>cancellator</i></td><td><i>ConditionalSynchronizer</i></td><td>The cancellator.</td></tr>
 </tbody>
 </table>
@@ -1270,6 +1314,10 @@ Close the service.
 
 Create a new slave service.
 
+> <u><b>Deprecation Warning</b></u>:
+>   - This method would be removed in next major release.
+>   - Use MBSlaveService.NewService() method instead.
+
 <u>Exception(s)</u>:
 
 <table>
@@ -1290,6 +1338,46 @@ Create a new slave service.
 </thead>
 <tbody>
 <tr><td><i>initiator</i></td><td><i>IMBSlaveServiceInitiator</i></td><td>The service initiator.</td></tr>
+<tr><td><i>cancellator</i></td><td><i>ConditionalSynchronizer</i></td><td>The cancellator.</td></tr>
+</tbody>
+</table>
+
+<u>Return value</u>:
+
+<table>
+<thead>
+<th>Return Type</th><th>Return Description</th>
+</thead>
+<tbody>
+<tr><td><i>Promise&lt;MBSlaveService&gt;</i></td><td>The promise object (resolves with the slave service if succeed, rejects if error occurred).</td></tr>
+</tbody>
+</table>
+
+##### (Static Method) MBSlaveService.NewService(initiator[, options, [, cancellator]])
+
+Get a new slave service.
+
+<u>Exception(s)</u>:
+
+<table>
+<thead>
+<th>Exception Class</th><th>Exception Description</th>
+</thead>
+<tbody>
+<tr><td><i>MBOperationCancelledError</i></td><td>The cancellator was activated.</td></tr>
+<tr><td><i>MBInitiateError</i></td><td>Failed to initiate transport-layer, protocol-layer or data model.</td></tr>
+</tbody>
+</table>
+
+<u>Parameter(s)</u>:
+
+<table>
+<thead>
+<th>Parameter Name</th><th>Parameter Type</th><th>Parameter Description</th>
+</thead>
+<tbody>
+<tr><td><i>initiator</i></td><td><i>IMBSlaveServiceInitiator</i></td><td>The service initiator.</td></tr>
+<tr><td><i>options</i></td><td><i>MBSlaveServiceOption</i></td><td>The service options.</td></tr>
 <tr><td><i>cancellator</i></td><td><i>ConditionalSynchronizer</i></td><td>The cancellator.</td></tr>
 </tbody>
 </table>

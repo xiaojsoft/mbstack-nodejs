@@ -335,6 +335,9 @@ function MBMasterService(
 /**
  *  Create a new master service.
  * 
+ *  @deprecated
+ *    - This method would be removed in next major release.
+ *    - Use MBMasterService.NewService() method instead.
  *  @throws {MBOperationCancelledError}
  *    - The cancellator was activated.
  *  @throws {MBInitiateError}
@@ -351,13 +354,42 @@ MBMasterService.Create = async function(
     initiator, 
     cancellator = new ConditionalSynchronizer()
 ) {
+    return await MBMasterService.NewService(
+        initiator, 
+        new MBMasterServiceOption(), 
+        cancellator
+    );
+};
+
+/**
+ *  Get a new master service.
+ * 
+ *  @throws {MBOperationCancelledError}
+ *    - The cancellator was activated.
+ *  @throws {MBInitiateError}
+ *    - Failed to initiate transport-layer.
+ *  @param {IMBMasterServiceInitiator} initiator
+ *    - The service initiator.
+ *  @param {MBMasterServiceOption} [options]
+ *    - The service options.
+ *  @param {ConditionalSynchronizer} [cancellator]
+ *    - The cancellator.
+ *  @returns {Promise<MBMasterService>}
+ *    - The promise object (resolves with the master service if succeed, rejects
+ *      if error occurred).
+ */
+MBMasterService.NewService = async function(
+    initiator, 
+    options = new MBMasterServiceOption(),
+    cancellator = new ConditionalSynchronizer()
+) {
     //  Initiate transport layer.
     let layerTransport = await initiator.initiateTransportLayer(
         cancellator
     );
 
     //  Create service.
-    return new MBMasterService(layerTransport);
+    return new MBMasterService(layerTransport, options);
 };
 
 /**

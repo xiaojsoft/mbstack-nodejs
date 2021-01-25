@@ -617,7 +617,7 @@ Util.inherits(MBExampleSlaveServiceInitiator, IMBSlaveServiceInitiator);
 (async function() {
     //  Create a slave service.
     let slaveInitiator = new MBExampleSlaveServiceInitiator();
-    let slave = await MBSlaveService.Create(slaveInitiator);
+    let slave = await MBSlaveService.NewService(slaveInitiator);
 
     //  Handle SIGINT.
     Process.on("SIGINT", function() {
