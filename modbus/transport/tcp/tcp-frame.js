@@ -67,7 +67,8 @@ const MAX_PDU_LENGTH = MbConventions.MAX_PDU_LENGTH;
  *      - Transaction identifier is invalid.
  *      - Protocol identifier is invalid.
  *      - Protocol payload is too long (> 65535).
- *      - Protocol payload is too long for Modbus protocol (> 254).
+ *      - Protocol payload is too long for Modbus protocol (> MAX_PDU_LENGTH + 
+ *        1).
  *  @param {Number} transactionID 
  *    - The transaction identifier.
  *  @param {Number} protocolID 

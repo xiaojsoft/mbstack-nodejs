@@ -19,6 +19,8 @@ const MbTspTcpFrame =
     require("./../tcp-frame");
 const MbTspCore = 
     require("./../../core");
+const MbConventions = 
+    require("./../../../conventions");
 const MbError = 
     require("./../../../../error");
 const XRTLibAsync = 
@@ -79,6 +81,8 @@ const TRANSPORT_NAME =
     MbTspTcpConstants.TRANSPORT_NAME;
 const MBAP_PROTOID_MODBUS = 
     MbTspTcpConstants.MBAP_PROTOID_MODBUS;
+const MAX_PDU_LENGTH = 
+    MbConventions.MAX_PDU_LENGTH;
 
 //
 //  Constants.
@@ -526,10 +530,11 @@ function MBTCPMasterTransport(
                         "Response frame is too short (< 7)."
                     );
                 }
-                if (frameProtoPayload.length > 254) {
-                    throw new MBCommunicationError(
-                        "Response frame is too long (> 260)."
-                    );
+                if (frameProtoPayload.length > MAX_PDU_LENGTH + 1) {
+                    throw new MBCommunicationError(Util.format(
+                        "Response frame is too long (> %d).",
+                        MAX_PDU_LENGTH + 8
+                    ));
                 }
 
                 //  Extract unit identifier, function code and data from the 

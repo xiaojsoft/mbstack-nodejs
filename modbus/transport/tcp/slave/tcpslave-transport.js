@@ -17,6 +17,8 @@ const MbTspTcpTransceiver =
     require("./../tcp-transceiver");
 const MbTspCore = 
     require("./../../core");
+const MbConventions = 
+    require("./../../../conventions");
 const MbError = 
     require("./../../../../error");
 const XRTLibAsync = 
@@ -87,6 +89,8 @@ const TRANSPORT_NAME =
     MbTspTcpConstants.TRANSPORT_NAME;
 const MBAP_PROTOID_MODBUS = 
     MbTspTcpConstants.MBAP_PROTOID_MODBUS;
+const MAX_PDU_LENGTH = 
+    MbConventions.MAX_PDU_LENGTH;
 
 //
 //  Constants.
@@ -464,9 +468,9 @@ function MBTCPSlaveTransport(
             }
 
             //  Skip if the length of the query frame is too long (longer than 
-            //  260 bytes means that this frame may be corrupted, currently we 
-            //  just simply drop it).
-            if (queryProtocolPayload.length > 254) {
+            //  MAX_PDU_LENGTH + 8 bytes means that this frame may be corrupted,
+            //  currently we just simply drop it).
+            if (queryProtocolPayload.length > MAX_PDU_LENGTH + 1) {
                 continue;
             }
 
