@@ -483,6 +483,13 @@ function MBRtuTransceiver(
     };
 
     //
+    //  Initialization.
+    //
+
+    //  Disable max listener warning.
+    self.setMaxListeners(0);
+
+    //
     //  Coroutine(s).
     //
 
@@ -928,6 +935,10 @@ function MBRtuTransceiver(
         self.emit("end");
     });
 }
+
+//
+//  Inheritances.
+//
 Util.inherits(MBRtuTransceiver, EventEmitter);
 
 //  Export public APIs.

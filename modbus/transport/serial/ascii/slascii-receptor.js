@@ -185,6 +185,13 @@ function MBAsciiReceptor() {
             }
         }
     };
+
+    //
+    //  Initialization.
+    //
+
+    //  Disable max listener warning.
+    self.setMaxListeners(0);
 }
 
 //  Frame flags.

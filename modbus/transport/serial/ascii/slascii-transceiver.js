@@ -342,6 +342,13 @@ function MBAsciiTransceiver(
     };
 
     //
+    //  Initialization.
+    //
+
+    //  Disable max listener warning.
+    self.setMaxListeners(0);
+
+    //
     //  Coroutine(s).
     //
 
