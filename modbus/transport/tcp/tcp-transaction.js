@@ -27,14 +27,21 @@ const MBParameterError =
     MbError.MBParameterError;
 const ConditionalSynchronizer = 
     XRTLibAsync.Synchronize.Conditional.ConditionalSynchronizer;
-const SemaphoreSynchronizer = 
-    XRTLibAsync.Synchronize.Semaphore.SemaphoreSynchronizer;
+const EventFlags = 
+    XRTLibAsync.Synchronize.Event.EventFlags;
 
 //  Imported functions.
 const CreatePreemptivePromise = 
     XRTLibAsync.Asynchronize.Preempt.CreatePreemptivePromise;
 const ReportBug = 
     XRTLibBugHandler.ReportBug;
+
+//
+//  Constants.
+//
+
+//  Bit flags.
+const BITFLAG_ACTIVEID_FULL = 0x01;
 
 //
 //  Classes.
@@ -309,14 +316,35 @@ function MBTCPTransactionManager(nMaxParallelTransactions = 65536) {
     //  Members.
     //
 
+    //  Bit flags.
+    let bitflags = new EventFlags(0);
+
     //  Active IDs set.
     let actives = new Set();
 
     //  Internal transaction manager.
     let mgr = new MBTCPInternalTransactionManager();
 
-    //  Free ID semaphore.
-    let semFree = new SemaphoreSynchronizer(nMaxParallelTransactions);
+    //
+    //  Private methods.
+    //
+
+    /**
+     *  Update active ID set bit flags.
+     */
+    function _UpdateActiveSetBitFlags() {
+        if (actives.size >= nMaxParallelTransactions) {
+            bitflags.post(
+                BITFLAG_ACTIVEID_FULL,
+                EventFlags.POST_FLAG_SET
+            );
+        } else {
+            bitflags.post(
+                BITFLAG_ACTIVEID_FULL,
+                EventFlags.POST_FLAG_CLR
+            );
+        }
+    }
 
     //
     //  Public methods.
@@ -336,29 +364,25 @@ function MBTCPTransactionManager(nMaxParallelTransactions = 65536) {
     this.allocate = async function(
         cancellator = new ConditionalSynchronizer()
     ) {
-        let cts = new ConditionalSynchronizer();
-        let wh1 = semFree.wait(cts);
-        let wh2 = cancellator.waitWithCancellator(cts);
-        let rsv = await CreatePreemptivePromise([wh1, wh2]);
-        cts.fullfill();
-        let wh = rsv.getPromiseObject();
-        if (wh == wh1) {
-            //  Allocate an ID.
-            let id = mgr.allocate();
-            actives.add(id);
-            return id;
-        } else {
-            //  Wait for the semaphore wait handler to be settled.
-            try {
-                await wh1;
+        //  Wait for the active ID set to be not full.
+        while (actives.size >= nMaxParallelTransactions) {
+            //  Wait for signals.
+            let cts = new ConditionalSynchronizer();
+            let wh1 = bitflags.pend(
+                BITFLAG_ACTIVEID_FULL,
+                EventFlags.PEND_FLAG_CLR_ALL,
+                cts
+            );
+            let wh2 = cancellator.waitWithCancellator(cts);
+            let rsv = await CreatePreemptivePromise([wh1, wh2]);
+            cts.fullfill();
 
-                //  Give back since we abandoned.
-                semFree.signal();
-            } catch(error) {
-                //  Do nothing.
-            }
-
-            if (wh == wh2) {
+            //  Handle the signal.
+            let wh = rsv.getPromiseObject();
+            if (wh == wh1) {
+                //  Check again.
+                continue;
+            } else if (wh == wh2) {
                 throw new MBOperationCancelledError(
                     "The cancellator was activated."
                 );
@@ -366,6 +390,13 @@ function MBTCPTransactionManager(nMaxParallelTransactions = 65536) {
                 ReportBug("Invalid wait handler.", true, MBBugError);
             }
         }
+
+        //  Allocate an ID.
+        let id = mgr.allocate();
+        actives.add(id);
+        _UpdateActiveSetBitFlags();
+
+        return id;
     };
 
     /**
@@ -384,7 +415,7 @@ function MBTCPTransactionManager(nMaxParallelTransactions = 65536) {
 
         //  Free the ID.
         mgr.free(id);
-        semFree.signal();
+        _UpdateActiveSetBitFlags();
     };
 }
 

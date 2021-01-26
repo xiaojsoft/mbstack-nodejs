@@ -179,13 +179,19 @@ function MBTCPTransceiverOption() {
  *          - A "frame" event would be emitted when receives a frame.
  *          - An "end" event would be emitted when there is no more frame 
  *            (connection ends).
+ *          - Any call to MBTCPTransceiver.prototype.frameAwait() would cause 
+ *            a MBInvalidOperationError exception.
  *          - Any call to MBTCPTransceiver.prototype.frameReceive() would cause 
  *            a MBInvalidOperationError exception.
+ *          - Any call to MBTCPTransceiver.prototype.frameReceiveAll() would 
+ *            cause a MBInvalidOperationError exception.
  * 
  *        Otherwise:
  * 
  *          - Neither "frame" nor "end" event would be emitted.
  *          - Use MBTCPTransceiver.prototype.frameReceive() to receive a frame.
+ *          - Use MBTCPTransceiver.prototype.frameReceiveAll() to receive all 
+ *            frames.
  * 
  *  @constructor
  *  @extends {EventEmitter}
@@ -240,12 +246,13 @@ function MBTCPTransceiver(
      *  Update RX frame queue bit flags.
      */
     function _UpdateRxFrameQueueBitFlags() {
-        if (rxFrameQueue.length >= rxFrameQueueSize) {
+        let nRxFrameQueueItems = rxFrameQueue.length;
+        if (nRxFrameQueueItems >= rxFrameQueueSize) {
             bitflags.post(BITMASK_RXFRAMEQU_FULL, EventFlags.POST_FLAG_SET);
         } else {
             bitflags.post(BITMASK_RXFRAMEQU_FULL, EventFlags.POST_FLAG_CLR);
         }
-        if (rxFrameQueue.length == 0) {
+        if (nRxFrameQueueItems == 0) {
             bitflags.post(BITMASK_RXFRAMEQU_EMPTY, EventFlags.POST_FLAG_SET);
         } else {
             bitflags.post(BITMASK_RXFRAMEQU_EMPTY, EventFlags.POST_FLAG_CLR);
@@ -284,6 +291,83 @@ function MBTCPTransceiver(
     };
 
     /**
+     *  Wait for frame to be received.
+     * 
+     *  @throws {MBInvalidOperationError}
+     *    - The asynchronous receiving is enabled.
+     *  @throws {MBOperationCancelledError}
+     *    - The cancellator was activated.
+     *  @param {ConditionalSynchronizer} [cancellator] 
+     *    - The cancellator.
+     *  @return {Promise<?MBTCPFrame>}
+     *    - The promise object (resolves if succeed, rejects if error occurred).
+     */
+    this.frameAwait = async function(
+        cancellator = new ConditionalSynchronizer()
+    ) {
+        //  Throw if asynchronous receiving is enabled.
+        if (useAsyncRX) {
+            throw new MBInvalidOperationError(
+                "Not allowed when asynchronous receiving is enabled."
+            );
+        }
+
+        //  Wait for the RX queue to be non-empty.
+        while (rxFrameQueue.length == 0) {
+            //  Wait for signals.
+            let cts = new ConditionalSynchronizer();
+            let wh1 = bitflags.pend(
+                BITMASK_RXFRAMEQU_EMPTY, 
+                EventFlags.PEND_FLAG_CLR_ALL, 
+                cts
+            );
+            let wh2 = cancellator.waitWithCancellator(cts);
+            let rsv = await CreatePreemptivePromise([wh1, wh2]);
+            cts.fullfill();
+
+            //  Handle the signal.
+            let wh = rsv.getPromiseObject();
+            if (wh == wh1) {
+                //  Check again.
+                continue;
+            } else if (wh == wh2) {
+                throw new MBOperationCancelledError(
+                    "The cancellator was activated."
+                );
+            } else {
+                ReportBug("Invalid wait handler.", true, MBBugError);
+            }
+        }
+    };
+
+    /**
+     *  Receive all frames.
+     * 
+     *  @throws {MBInvalidOperationError}
+     *    - The asynchronous receiving is enabled.
+     *  @param {MBTCPFrame[]} frameRcvList
+     *    - The frame reception list.
+     *  @returns {Boolean}
+     *    - True if no more frame could be returned (e.g. the frame transceiver 
+     *      was closed).
+     */
+    this.frameReceiveAll = function(
+        frameRcvList
+    ) {
+        while (rxFrameQueue.length != 0) {
+            let frame = rxFrameQueue[0];
+            if (frame === null) {
+                _UpdateRxFrameQueueBitFlags();
+                return true;
+            }
+            rxFrameQueue.shift();
+            frameRcvList.push(frame);
+        }
+        _UpdateRxFrameQueueBitFlags();
+        return false;
+    };
+
+    /**
      *  Receive a frame.
      * 
      *  Note(s):
@@ -306,8 +390,7 @@ function MBTCPTransceiver(
         //  Throw if asynchronous receiving is enabled.
         if (useAsyncRX) {
             throw new MBInvalidOperationError(
-                "frameReceive() method is not allowed when asynchronous " + 
-                "receiving is enabled."
+                "Not allowed when asynchronous receiving is enabled."
             );
         }
 

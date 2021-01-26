@@ -67,8 +67,6 @@ const ConditionalSynchronizer =
     XRTLibAsync.Synchronize.Conditional.ConditionalSynchronizer;
 const EventFlags = 
     XRTLibAsync.Synchronize.Event.EventFlags;
-const SemaphoreSynchronizer = 
-    XRTLibAsync.Synchronize.Semaphore.SemaphoreSynchronizer;
 const TCPError = 
     XRTLibTCPUtilities.Error.TCPError;
 const TCPListenOption = 
@@ -104,6 +102,10 @@ const DFLT_MAXPARALLEL = 1024;
 const SIGBITMASK_TR_CANCELLED = 0x01;
 const SIGBITMASK_TR_COMPLETE  = 0x02;
 const SIGBITMASK_TR_COMPLETE_WITH_ERROR = 0x04;
+
+//  Signal bit masks (group 2).
+const SIGBITMASK_PENDTR_EMPTY = 0x01;
+const SIGBITMASK_PENDTR_FULL  = 0x02;
 
 //
 //  Classes.
@@ -381,6 +383,11 @@ function MBTCPSlaveTransport(
     // //  Self reference.
     // let self = this;
 
+    //  Bit flags.
+    let bitflags = new EventFlags(
+        SIGBITMASK_PENDTR_EMPTY
+    );
+
     //  Synchronizers.
     let syncCmdClose = new ConditionalSynchronizer();
     let syncCmdTerminate = new ConditionalSynchronizer();
@@ -388,14 +395,40 @@ function MBTCPSlaveTransport(
 
     //  Pending transaction list.
     let pendingTransactions = [];
-    let semPendingTransactionsToken = 
-        new SemaphoreSynchronizer(options.getMaxParallelTransactions());
-    let semPendingTransactionsItems = 
-        new SemaphoreSynchronizer(0);
+    let nMaxPendingTransactions = options.getMaxParallelTransactions();
 
     //
     //  Private methods.
     //
+
+    /**
+     *  Update pending transaction list bit flags.
+     */
+    function _UpdatePendingTransactionListBitFlags() {
+        let nPendingTransactions = pendingTransactions.length;
+        if (nPendingTransactions >= nMaxPendingTransactions) {
+            bitflags.post(
+                SIGBITMASK_PENDTR_FULL,
+                EventFlags.POST_FLAG_SET
+            );
+        } else {
+            bitflags.post(
+                SIGBITMASK_PENDTR_FULL,
+                EventFlags.POST_FLAG_CLR
+            );
+        }
+        if (nPendingTransactions == 0) {
+            bitflags.post(
+                SIGBITMASK_PENDTR_EMPTY,
+                EventFlags.POST_FLAG_SET
+            );
+        } else {
+            bitflags.post(
+                SIGBITMASK_PENDTR_EMPTY,
+                EventFlags.POST_FLAG_CLR
+            );
+        }
+    }
 
     /**
      *  Handle connection.
@@ -409,49 +442,45 @@ function MBTCPSlaveTransport(
      *    - The promise object (resolves if succeed, rejects if error occurred).
      */
     async function _HandleConnection(rxtx) {
+        //  Query frames.
+        let queryFrameList = [];
+
+connhdlOutLoop:
         while(true) {
             //  Receive one query frame.
-            let queryFrame = null;
-            {
+            while (queryFrameList.length == 0) {
+                //  Wait for signals.
                 let cts = new ConditionalSynchronizer();
-                let wh1 = rxtx.frameReceive(cts);
+                let wh1 = rxtx.frameAwait(cts);
                 let wh2 = syncCmdClose.waitWithCancellator(cts);
                 let wh3 = syncCmdTerminate.waitWithCancellator(cts);
                 let rsv = await CreatePreemptivePromise([wh1, wh2, wh3]);
                 cts.fullfill();
+
+                //  Handle the signal.
                 let wh = rsv.getPromiseObject();
                 if (wh == wh1) {
-                    /**
-                     *  @type {?MBTCPFrame}
-                     */
-                    queryFrame = rsv.getValue();
-                    if (queryFrame === null) {
-                        break;
+                    if (rxtx.frameReceiveAll(queryFrameList)) {
+                        queryFrameList.push(null);
                     }
+                } else if (wh == wh2) {
+                    if (!rxtx.isClosed()) {
+                        rxtx.close(false);
+                    }
+                    break connhdlOutLoop;
+                } else if (wh == wh3) {
+                    if (!rxtx.isClosed()) {
+                        rxtx.close(true);
+                        await rxtx.wait();
+                    }
+                    break connhdlOutLoop;
                 } else {
-                    //  Wait for the frame receive wait handler to be settled.
-                    try {
-                        await wh1;
-                    } catch(error) {
-                        //  Do nothing.
-                    }
-
-                    //  Handle other signals.
-                    if (wh == wh2) {
-                        if (!rxtx.isClosed()) {
-                            rxtx.close(false);
-                        }
-                        break;
-                    } else if (wh == wh3) {
-                        if (!rxtx.isClosed()) {
-                            rxtx.close(true);
-                            await rxtx.wait();
-                        }
-                        break;
-                    } else {
-                        ReportBug("Invalid wait handler.", true, MBBugError);
-                    }
+                    ReportBug("Invalid wait handler.", true, MBBugError);
                 }
+            }
+            let queryFrame = queryFrameList.shift();
+            if (queryFrame === null) {
+                break;
             }
 
             //  Skip if the query frame is not a Modbus frame.
@@ -489,37 +518,36 @@ function MBTCPSlaveTransport(
             ) {
                 return async function() {
                     //  Get a token to pend on a transaction.
-                    {
+                    while (
+                        pendingTransactions.length >= nMaxPendingTransactions
+                    ) {
+                        //  Wait for signals.
                         let cts = new ConditionalSynchronizer();
-                        let wh1 = semPendingTransactionsToken.wait(cts);
+                        let wh1 = bitflags.pend(
+                            SIGBITMASK_PENDTR_FULL,
+                            EventFlags.PEND_FLAG_CLR_ALL,
+                            cts
+                        );
                         let wh2 = syncCmdClose.waitWithCancellator(cts);
                         let wh3 = syncCmdTerminate.waitWithCancellator(cts);
                         let rsv = await CreatePreemptivePromise([
                             wh1, wh2, wh3
                         ]);
                         cts.fullfill();
+
+                        //  Handle the signal.
                         let wh = rsv.getPromiseObject();
                         if (wh == wh1) {
-                            //  Do nothing.
+                            //  Check again.
+                            continue;
+                        } else if (wh == wh2 || wh == wh3) {
+                            return;
                         } else {
-                            //  Wait for the tokening wait handler to be 
-                            //  settled.
-                            try {
-                                await wh1;
-                                semPendingTransactionsToken.signal();
-                            } catch(error) {
-                                //  Do nothing.
-                            }
-
-                            if (wh == wh2 || wh == wh3) {
-                                return;
-                            } else {
-                                ReportBug(
-                                    "Invalid wait handler.", 
-                                    true, 
-                                    MBBugError
-                                );
-                            }
+                            ReportBug(
+                                "Invalid wait handler.", 
+                                true, 
+                                MBBugError
+                            );
                         }
                     }
 
@@ -547,7 +575,7 @@ function MBTCPSlaveTransport(
                     //  Append the transaction object to pending transaction 
                     //  list.
                     pendingTransactions.push(transaction);
-                    semPendingTransactionsItems.signal();
+                    _UpdatePendingTransactionListBitFlags();
 
                     //  Wait for answer.
                     let answer = null;
@@ -739,30 +767,26 @@ function MBTCPSlaveTransport(
         }
 
         //  Wait for one pending transaction.
-        let cts = new ConditionalSynchronizer();
-        let wh1 = semPendingTransactionsItems.wait(cts);
-        let wh2 = cancellator.waitWithCancellator(cts);
-        let wh3 = syncCmdClose.waitWithCancellator(cts);
-        let wh4 = syncCmdTerminate.waitWithCancellator(cts);
-        let rsv = await CreatePreemptivePromise([wh1, wh2, wh3, wh4]);
-        cts.fullfill();
-        let wh = rsv.getPromiseObject();
-        if (wh == wh1) {
-            let transaction = pendingTransactions.shift();
-            semPendingTransactionsToken.signal();
-            return transaction;
-        } else {
-            //  Wait for the pending transaction semaphore wait handler to be 
-            //  settled.
-            try {
-                await wh1;
-                semPendingTransactionsItems.signal();
-            } catch(error) {
-                //  Do nothing.
-            }
+        while (pendingTransactions.length == 0) {
+            //  Wait for signals.
+            let cts = new ConditionalSynchronizer();
+            let wh1 = bitflags.pend(
+                SIGBITMASK_PENDTR_EMPTY,
+                EventFlags.PEND_FLAG_CLR_ALL,
+                cts
+            );
+            let wh2 = cancellator.waitWithCancellator(cts);
+            let wh3 = syncCmdClose.waitWithCancellator(cts);
+            let wh4 = syncCmdTerminate.waitWithCancellator(cts);
+            let rsv = await CreatePreemptivePromise([wh1, wh2, wh3, wh4]);
+            cts.fullfill();
 
-            //  Handle other signals.
-            if (wh == wh2) {
+            //  Handle the signal.
+            let wh = rsv.getPromiseObject();
+            if (wh == wh1) {
+                //  Check again.
+                continue;
+            } else if (wh == wh2) {
                 throw new MBOperationCancelledError(
                     "The cancellator was activated."
                 );
@@ -773,7 +797,14 @@ function MBTCPSlaveTransport(
             } else {
                 ReportBug("Invalid wait handler.", true, MBBugError);
             }
+            
         }
+        
+        //  Get one pending transaction.
+        let transaction = pendingTransactions.shift();
+        _UpdatePendingTransactionListBitFlags();
+
+        return transaction;
     };
 
     /**
