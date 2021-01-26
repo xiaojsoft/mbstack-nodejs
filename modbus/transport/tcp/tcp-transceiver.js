@@ -49,8 +49,8 @@ const PreemptReject =
     XRTLibAsync.Asynchronize.Preempt.PreemptReject;
 const ConditionalSynchronizer = 
     XRTLibAsync.Synchronize.Conditional.ConditionalSynchronizer;
-const SemaphoreSynchronizer = 
-    XRTLibAsync.Synchronize.Semaphore.SemaphoreSynchronizer;
+const EventFlags = 
+    XRTLibAsync.Synchronize.Event.EventFlags;
 const TCPError = 
     XRTLibTCPUtilities.Error.TCPError;
 const TCPConnection = 
@@ -80,6 +80,12 @@ const MBTCP_DFLT_TX_FRAMEQU_SIZE = 1;
 
 //  Empty buffer.
 const EMPTY_BUF = Buffer.allocUnsafe(0);
+
+//  Bit masks.
+const BITMASK_RXFRAMEQU_FULL      = 0x01;
+const BITMASK_RXFRAMEQU_EMPTY     = 0x02;
+const BITMASK_TXFRAMEQU_FULL      = 0x04;
+const BITMASK_TXFRAMEQU_EMPTY     = 0x08;
 
 //
 //  Classes.
@@ -205,20 +211,19 @@ function MBTCPTransceiver(
     //  Self reference.
     let self = this;
 
+    //  Flags.
+    let bitflags = new EventFlags(
+        BITMASK_RXFRAMEQU_EMPTY | BITMASK_TXFRAMEQU_EMPTY
+    );
+
     //  RX frame queue and its semaphores.
     let rxEnded = false;
     let rxFrameQueue = [];
-    let semRxFrameQueueItems = new SemaphoreSynchronizer(0);
-    let semRxFrameQueueTokens = new SemaphoreSynchronizer(
-        options.getRxFrameQueueSize()
-    );
+    let rxFrameQueueSize = options.getRxFrameQueueSize();
 
     //  TX frame queue and its semaphroes.
     let txFrameQueue = [];
-    let semTxFrameQueueItems = new SemaphoreSynchronizer(0);
-    let semTxFrameQueueTokens = new SemaphoreSynchronizer(
-        options.getTxFrameQueueSize()
-    );
+    let txFrameQueueSize = options.getTxFrameQueueSize();
 
     //  Signals.
     let blCmdClose = false;
@@ -226,6 +231,42 @@ function MBTCPTransceiver(
     let syncRxCrtExited = new ConditionalSynchronizer();
     let syncTxCrtExited = new ConditionalSynchronizer();
     let syncClosed = new ConditionalSynchronizer();
+
+    //
+    //  Private methods.
+    //
+
+    /**
+     *  Update RX frame queue bit flags.
+     */
+    function _UpdateRxFrameQueueBitFlags() {
+        if (rxFrameQueue.length >= rxFrameQueueSize) {
+            bitflags.post(BITMASK_RXFRAMEQU_FULL, EventFlags.POST_FLAG_SET);
+        } else {
+            bitflags.post(BITMASK_RXFRAMEQU_FULL, EventFlags.POST_FLAG_CLR);
+        }
+        if (rxFrameQueue.length == 0) {
+            bitflags.post(BITMASK_RXFRAMEQU_EMPTY, EventFlags.POST_FLAG_SET);
+        } else {
+            bitflags.post(BITMASK_RXFRAMEQU_EMPTY, EventFlags.POST_FLAG_CLR);
+        }
+    }
+
+    /**
+     *  Update TX frame queue bit flags.
+     */
+    function _UpdateTxFrameQueueBitFlags() {
+        if (txFrameQueue.length >= txFrameQueueSize) {
+            bitflags.post(BITMASK_TXFRAMEQU_FULL, EventFlags.POST_FLAG_SET);
+        } else {
+            bitflags.post(BITMASK_TXFRAMEQU_FULL, EventFlags.POST_FLAG_CLR);
+        }
+        if (txFrameQueue.length == 0) {
+            bitflags.post(BITMASK_TXFRAMEQU_EMPTY, EventFlags.POST_FLAG_SET);
+        } else {
+            bitflags.post(BITMASK_TXFRAMEQU_EMPTY, EventFlags.POST_FLAG_CLR);
+        }
+    }
 
     //
     //  Public methods.
@@ -271,47 +312,40 @@ function MBTCPTransceiver(
         }
 
         //  Wait for the RX queue to be non-empty.
-        {
+        while (rxFrameQueue.length == 0) {
+            //  Wait for signals.
             let cts = new ConditionalSynchronizer();
-            let wh1 = semRxFrameQueueItems.wait(cts);
+            let wh1 = bitflags.pend(
+                BITMASK_RXFRAMEQU_EMPTY, 
+                EventFlags.PEND_FLAG_CLR_ALL, 
+                cts
+            );
             let wh2 = cancellator.waitWithCancellator(cts);
             let rsv = await CreatePreemptivePromise([wh1, wh2]);
             cts.fullfill();
+
+            //  Handle the signal.
             let wh = rsv.getPromiseObject();
             if (wh == wh1) {
-                let frame = rxFrameQueue.shift();
-                if (frame === null) {
-                    rxFrameQueue.unshift(null);
-                    semRxFrameQueueItems.signal();
-                } else {
-                    semRxFrameQueueTokens.signal();
-                }
-                return frame;
+                //  Check again.
+                continue;
+            } else if (wh == wh2) {
+                throw new MBOperationCancelledError(
+                    "The cancellator was activated."
+                );
             } else {
-                //  Wait for the semaphore wait handler to be settled.
-                try {
-                    await wh1;
-                    let frame = rxFrameQueue.shift();
-                    if (frame === null) {
-                        rxFrameQueue.unshift(null);
-                        semRxFrameQueueItems.signal();
-                    } else {
-                        semRxFrameQueueTokens.signal();
-                    }
-                    return frame;
-                } catch(error) {
-                    //  Do nothing.
-                }
-
-                if (wh == wh2) {
-                    throw new MBOperationCancelledError(
-                        "The cancellator was activated."
-                    );
-                } else {
-                    ReportBug("Invalid wait handler.", true, MBBugError);
-                }
+                ReportBug("Invalid wait handler.", true, MBBugError);
             }
         }
+
+        //  Pop the frame.
+        if (rxFrameQueue[0] === null) {
+            return null;
+        }
+        let frame = rxFrameQueue.shift();
+        _UpdateRxFrameQueueBitFlags();
+
+        return frame;
     };
 
     /**
@@ -351,42 +385,38 @@ function MBTCPTransceiver(
         }
 
         //  Wait for TX queue space and add the frame to the TX queue.
-        {
+        while (txFrameQueue.length >= txFrameQueueSize) {
+            //  Wait for signals.
             let cts = new ConditionalSynchronizer();
-            let wh1 = semTxFrameQueueTokens.wait(cts);
+            let wh1 = bitflags.pend(
+                BITMASK_TXFRAMEQU_FULL,
+                EventFlags.PEND_FLAG_CLR_ALL,
+                cts
+            );
             let wh2 = cancellator.waitWithCancellator(cts);
             let wh3 = syncClosed.waitWithCancellator(cts);
             let rsv = await CreatePreemptivePromise([wh1, wh2, wh3]);
             cts.fullfill();
+
+            //  Handle the signal.
             let wh = rsv.getPromiseObject();
             if (wh == wh1) {
-                //  Add the frame to TX queue.
-                txFrameQueue.push(frame);
-                semTxFrameQueueItems.signal();
+                //  Check again.
+                continue;
+            } else if (wh == wh2) {
+                throw new MBOperationCancelledError(
+                    "The cancellator was activated."
+                );
+            } else if (wh == wh3) {
+                throw new MBCommunicationEndOfStreamError(
+                    "TCP connection closed."
+                );
             } else {
-                //  Wait for the semaphore wait handler to be settled.
-                try {
-                    await wh1;
-
-                    //  Give back the token since we abandoned.
-                    semTxFrameQueueTokens.signal();
-                } catch(error) {
-                    //  Do nothing.
-                }
-
-                if (wh == wh2) {
-                    throw new MBOperationCancelledError(
-                        "The cancellator was activated."
-                    );
-                } else if (wh == wh3) {
-                    throw new MBCommunicationEndOfStreamError(
-                        "TCP connection closed."
-                    );
-                } else {
-                    ReportBug("Invalid wait handler.", true, MBBugError);
-                }
+                ReportBug("Invalid wait handler.", true, MBBugError);
             }
         }
+        txFrameQueue.push(frame);
+        _UpdateTxFrameQueueBitFlags();
     };
 
     /**
@@ -447,7 +477,7 @@ function MBTCPTransceiver(
         } else {
             if (!blCmdClose) {
                 txFrameQueue.push(null);
-                semTxFrameQueueItems.signal();
+                _UpdateTxFrameQueueBitFlags();
                 blCmdClose = true;
             }
         }
@@ -469,6 +499,7 @@ function MBTCPTransceiver(
         //  Get the TCP read stream.
         let rs = connection.getReadStream();
 
+rxOuterLoop:
         while(true) {
             //  Read the header (first 6 bytes of the MBAP).
             /**
@@ -564,31 +595,34 @@ function MBTCPTransceiver(
             if (useAsyncRX) {
                 self.emit("frame", frame);
             } else {
-                let cts = new ConditionalSynchronizer();
-                let wh1 = semRxFrameQueueTokens.wait(cts);
-                let wh2 = syncCmdTerminate.waitWithCancellator(cts);
-                let rsv = await CreatePreemptivePromise([wh1, wh2]);
-                cts.fullfill();
-                let wh = rsv.getPromiseObject();
-                if (wh == wh1) {
-                    rxFrameQueue.push(frame);
-                    semRxFrameQueueItems.signal();
-                } else {
-                    //  Wait for the semaphore wait handler to be settled.
-                    try {
-                        await wh1;
-                        rxFrameQueue.push(frame);
-                        semRxFrameQueueItems.signal();
-                    } catch(error) {
-                        //  Do nothing.
-                    }
+                //  Wait for the RX frame queue to be not full.
+                while (rxFrameQueue.length >= rxFrameQueueSize) {
+                    //  Wait for signals.
+                    let cts = new ConditionalSynchronizer();
+                    let wh1 = bitflags.pend(
+                        BITMASK_RXFRAMEQU_FULL,
+                        EventFlags.PEND_FLAG_CLR_ALL,
+                        cts
+                    );
+                    let wh2 = syncCmdTerminate.waitWithCancellator(cts);
+                    let rsv = await CreatePreemptivePromise([wh1, wh2]);
+                    cts.fullfill();
 
-                    if (wh == wh2) {
-                        break;
+                    //  Handle the signal.
+                    let wh = rsv.getPromiseObject();
+                    if (wh == wh1) {
+                        //  Check again.
+                        continue;
+                    } else if (wh == wh2) {
+                        break rxOuterLoop;
                     } else {
                         ReportBug("Invalid wait handler.", true, MBBugError);
                     }
                 }
+
+                //  Push the frame to RX frame queue.
+                rxFrameQueue.push(frame);
+                _UpdateRxFrameQueueBitFlags();
             }
         }
 
@@ -601,7 +635,7 @@ function MBTCPTransceiver(
         } else {
             //  Insert NULL (ending) frame.
             rxFrameQueue.push(null);
-            semRxFrameQueueItems.signal();
+            _UpdateRxFrameQueueBitFlags();
         }
     })().catch(function(error) {
         ReportBug(Util.format(
@@ -617,6 +651,7 @@ function MBTCPTransceiver(
         //  Get the TCP write stream.
         let ws = connection.getWriteStream();
 
+txOuterLoop:
         while(true) {
             //  Stop immediately if terminate signal was triggered.
             if (syncCmdTerminate.isFullfilled()) {
@@ -633,44 +668,40 @@ function MBTCPTransceiver(
             }
 
             //  Wait for a frame to be transmitted.
-            let frame = null;
-            {
+            while (txFrameQueue.length == 0) {
+                //  Wait for signals.
                 let cts = new ConditionalSynchronizer();
-                let wh1 = semTxFrameQueueItems.wait(cts);
+                let wh1 = bitflags.pend(
+                    BITMASK_TXFRAMEQU_EMPTY,
+                    EventFlags.PEND_FLAG_CLR_ALL,
+                    cts
+                );
                 let wh2 = syncCmdTerminate.waitWithCancellator(cts);
                 let wh3 = connection.whenClosed(cts);
                 let rsv = await CreatePreemptivePromise([wh1, wh2, wh3]);
                 cts.fullfill();
+
+                //  Handle the signal.
                 let wh = rsv.getPromiseObject();
                 if (wh == wh1) {
-                    frame = txFrameQueue.shift();
-                    if (frame === null) {
-                        txFrameQueue.unshift(null);
-                        semTxFrameQueueItems.signal();
-                    } else {
-                        semTxFrameQueueTokens.signal();
+                    //  Check again.
+                    continue;
+                } else if (wh == wh2) {
+                    if (!connection.isClosed()) {
+                        connection.close(true);
+                        await connection.whenClosed();
                     }
+                    break txOuterLoop;
+                } else if (wh == wh3) {
+                    break txOuterLoop;
                 } else {
-                    //  Wait for the semaphore wait handler to be settled.
-                    try {
-                        await wh1;
-                        semTxFrameQueueItems.signal();
-                    } catch(error) {
-                        //  Do nothing.
-                    }
-
-                    if (wh == wh2) {
-                        if (!connection.isClosed()) {
-                            connection.close(true);
-                            await connection.whenClosed();
-                        }
-                        break;
-                    } else if (wh == wh3) {
-                        break;
-                    } else {
-                        ReportBug("Invalid wait handler.", true, MBBugError);
-                    }
+                    ReportBug("Invalid wait handler.", true, MBBugError);
                 }
+            }
+            let frame = null;
+            if (txFrameQueue[0] !== null) {
+                frame = txFrameQueue.shift();
+                _UpdateTxFrameQueueBitFlags();
             }
 
             //  Stop if close signal is triggered.
