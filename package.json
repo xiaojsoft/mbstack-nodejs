@@ -1,6 +1,6 @@
 {
   "name": "mbstack",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Modbus stack for Node.JS.",
   "main": "library/api.js",
   "author": "XiaoJSoft Studio.",
