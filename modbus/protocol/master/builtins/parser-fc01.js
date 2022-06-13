@@ -103,11 +103,13 @@ function MBMasterProtocolReadCoilsParser(nExpectedCoils) {
         let coilBitOffset = 0x01;
         let coils = [];
         for (let i = 0; i < nExpectedCoils; ++i) {
+            if (coilBitOffset == 0x01) {
+                coilByteValue = ansData.readUInt8(coilByteOffset);
+            }
             let coilValue = ((coilByteValue & coilBitOffset) != 0);
             coils.push(coilValue);
             if (coilBitOffset == 0x80) {
                 ++coilByteOffset;
-                coilByteValue = ansData.readUInt8(coilByteOffset);
                 coilBitOffset = 0x01;
             } else {
                 coilBitOffset <<= 1;

@@ -103,11 +103,13 @@ function MBMasterProtocolReadDiscreteInputsParser(nExpectedInputs) {
         let dciBitOffset = 0x01;
         let dcis = [];
         for (let i = 0; i < nExpectedInputs; ++i) {
+            if (dciBitOffset == 0x01) {
+                dciByteValue = ansData.readUInt8(dciByteOffset);
+            }
             let dciValue = ((dciByteValue & dciBitOffset) != 0);
             dcis.push(dciValue);
             if (dciBitOffset == 0x80) {
                 ++dciByteOffset;
-                dciByteValue = ansData.readUInt8(dciByteOffset);
                 dciBitOffset = 0x01;
             } else {
                 dciBitOffset <<= 1;
